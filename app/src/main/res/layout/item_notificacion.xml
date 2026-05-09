@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#F5F5F5"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="12dp">
+
+
+    <TextView
+        android:id="@+id/txtEstado"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pendiente"
+        android:textSize="12sp"
+        android:textColor="#666666"
+        android:textAllCaps="false" />
+
+
+    <TextView
+        android:id="@+id/txtTituloNotificacion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Agua/Plomeria"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:textStyle="normal"
+        android:layout_marginTop="2dp" />
+
+
+    <TextView
+        android:id="@+id/txtDescripcionNotificacion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fugas de agua en tuberias/Destapar..."
+        android:textSize="14sp"
+        android:textColor="#666666"
+        android:layout_marginTop="4dp" />
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#D0D0D0"
+        android:layout_marginTop="12dp" />
+
+</LinearLayout>
