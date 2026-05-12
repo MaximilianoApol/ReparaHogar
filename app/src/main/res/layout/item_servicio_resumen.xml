@@ -2,6 +2,7 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="16dp"
@@ -16,58 +17,34 @@
         android:padding="12dp">
 
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/imgServicioResumen"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/placeholder_servicio"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:shapeAppearanceOverlay="@style/RoundedImage8dp" />
-
-
         <TextView
             android:id="@+id/txtNombreServicioResumen"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="273dp"
+            android:layout_height="23dp"
             android:layout_marginStart="16dp"
             android:text="AC Service"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/txtDuracionResumen"
+            app:layout_constraintBottom_toTopOf="@+id/txtResumenFecha"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/imgServicioResumen"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed" />
 
 
         <TextView
-            android:id="@+id/txtDuracionResumen"
-            android:layout_width="0dp"
+            android:id="@+id/txtResumenFecha"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="• 1 hr"
-            android:textColor="#666666"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toTopOf="@+id/txtDetalleExtraResumen"
+            android:layout_marginTop="8dp"
+            android:text="Finalizado el 09/05/2026"
+            android:textColor="#757575"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@id/txtNombreServicioResumen"
             app:layout_constraintTop_toBottomOf="@id/txtNombreServicioResumen" />
 
-
-        <TextView
-            android:id="@+id/txtDetalleExtraResumen"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="• Includes dummy info"
-            android:textColor="#666666"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/txtNombreServicioResumen"
-            app:layout_constraintTop_toBottomOf="@id/txtDuracionResumen" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

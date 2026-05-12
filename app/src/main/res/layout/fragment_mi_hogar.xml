@@ -43,17 +43,7 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnObtenerUbicacion"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:text="Detectar mi ubicación"
-                android:textColor="#333333"
-                app:cornerRadius="12dp"
-                app:icon="@drawable/ic_location"
-                app:iconTint="#333333"
-                app:strokeColor="#333333" />
+
 
             <TextView
                 android:id="@+id/txtDireccionLabel"
@@ -142,7 +132,8 @@
                 android:text="Agendar Servicio"
                 android:textAllCaps="false"
                 android:textSize="18sp"
-                app:cornerRadius="30dp" />
+                app:cornerRadius="30dp"
+                app:icon="@drawable/ic_check"/>
 
         </LinearLayout>
     </ScrollView>

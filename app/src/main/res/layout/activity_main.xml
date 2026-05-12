@@ -3,113 +3,16 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white"
-    android:padding="24dp">
+    android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/imgLogo"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_marginTop="60dp"
-        android:src="@drawable/ic_logo"
+    <!-- ESTE ES EL CONTENEDOR QUE FALTA -->
+    <FrameLayout
+        android:id="@+id/main_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/txtWelcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Bienvenido a\nREPARAHOGAR"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imgLogo" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutEmail"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:hint="Correo electrónico"
-        app:boxStrokeColor="#00468B"
-        app:hintTextColor="#00468B"
-        app:endIconMode="custom"
-        app:endIconDrawable="@drawable/ic_email"
-        app:endIconTint="#00468B"
-        app:layout_constraintTop_toBottomOf="@id/txtWelcome">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textEmailAddress" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutPassword"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:hint="Contraseña"
-        app:boxStrokeColor="#00468B"
-        app:hintTextColor="#00468B"
-        app:endIconDrawable="@drawable/ic_lock"
-        app:passwordToggleEnabled="true"
-        app:layout_constraintTop_toBottomOf="@id/layoutEmail">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnIniciarSesion"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_marginTop="40dp"
-        android:text="Iniciar sesión"
-        android:textAllCaps="false"
-        android:textColor="#00468B"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:cornerRadius="30dp"
-        app:strokeColor="#00468B"
-        app:strokeWidth="2dp"
-        app:layout_constraintTop_toBottomOf="@id/layoutPassword" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnIniciarSesion">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="¿No tienes cuenta? "
-            android:textColor="#00468B" />
-
-        <TextView
-            android:id="@+id/txtRegistrate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Registrarte"
-            android:textColor="#00468B"
-            android:textStyle="bold" />
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

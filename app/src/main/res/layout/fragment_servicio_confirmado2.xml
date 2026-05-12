@@ -1,5 +1,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp">
@@ -28,7 +29,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Servicio completado"
+        android:text="Servicio terminado"
         android:textColor="#4CAF50"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -58,10 +59,12 @@
         android:id="@+id/btnGuardarEstado"
         android:layout_width="match_parent"
         android:layout_height="56dp"
+        android:layout_marginBottom="232dp"
         android:backgroundTint="#2E3B8E"
         android:text="Guardar estado"
         app:cornerRadius="28dp"
-        app:icon="@drawable/ic_check_circle_green"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:icon="@drawable/ic_check"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="32dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
