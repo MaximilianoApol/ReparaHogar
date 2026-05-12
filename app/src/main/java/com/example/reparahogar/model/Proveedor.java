@@ -26,7 +26,8 @@ public class Proveedor {
     private String tipoServicio;
 
     private float calificacionPromedio; // 0.0 – 5.0
-    private int totalServicios;         // Contador de servicios realizados
+    private int totalServicios;
+    private boolean verificado;         // Contador de servicios realizados
 
     // Ubicación (se actualiza en tiempo real cuando el proveedor está activo)
     private double latitud;
@@ -45,6 +46,8 @@ public class Proveedor {
         this.tipoServicio = tipoServicio;
         this.calificacionPromedio = 0f;
         this.totalServicios = 0;
+        this.verificado = false;
+
     }
 
     // ── Getters y Setters ──
@@ -82,4 +85,7 @@ public class Proveedor {
 
     public double getLongitud() { return longitud; }
     public void setLongitud(double longitud) { this.longitud = longitud; }
+
+    public boolean isVerificado() { return verificado; }
+    public void setVerificado(boolean verificado) { this.verificado = verificado; }
 }
