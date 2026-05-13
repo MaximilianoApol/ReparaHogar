@@ -79,7 +79,7 @@ public class TecnicoAdapter extends RecyclerView.Adapter<TecnicoAdapter.ViewHold
             txtServicios    = itemView.findViewById(R.id.txtServicios);
             // ratingBar en el layout es un LinearLayout que contiene un TextView
             ViewGroup ratingBar = itemView.findViewById(R.id.ratingBar);
-            txtCalificacion = (TextView) ratingBar.getChildAt(0); // primer TextView
+            txtCalificacion = (TextView) ratingBar.getChildAt(0);
         }
     }
 }

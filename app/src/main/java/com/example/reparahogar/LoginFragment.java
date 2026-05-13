@@ -41,7 +41,6 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // ⚠️ requireActivity() como owner → mismo ViewModel que MainActivity
         authViewModel = new ViewModelProvider(
                 requireActivity(),
                 new ViewModelFactory(requireActivity().getApplication())
@@ -52,7 +51,6 @@ public class LoginFragment extends Fragment {
         observarViewModel();
     }
 
-    // ── Vistas ────────────────────────────────────────────────────────────────
 
     private void enlazarVistas(View view) {
         layoutEmail      = view.findViewById(R.id.layoutEmail);
@@ -62,8 +60,6 @@ public class LoginFragment extends Fragment {
         btnIniciarSesion = view.findViewById(R.id.btnIniciarSesion);
         txtRegistrate    = view.findViewById(R.id.txtRegistrate);
     }
-
-    // ── Listeners ─────────────────────────────────────────────────────────────
 
     private void configurarListeners() {
 
@@ -86,8 +82,6 @@ public class LoginFragment extends Fragment {
         });
     }
 
-    // ── Observadores ─────────────────────────────────────────────────────────
-
     private void observarViewModel() {
 
         // Botón deshabilitado mientras carga
@@ -104,12 +98,8 @@ public class LoginFragment extends Fragment {
             }
         });
 
-        // La navegación la maneja MainActivity — no duplicamos lógica aquí.
-        // MainActivity observa getNavegarCliente / getNavegarProveedor /
-        // getNavegarVerificacion y actúa en consecuencia.
-    }
 
-    // ── Login ─────────────────────────────────────────────────────────────────
+    }
 
     private void intentarLogin() {
         layoutEmail.setError(null);

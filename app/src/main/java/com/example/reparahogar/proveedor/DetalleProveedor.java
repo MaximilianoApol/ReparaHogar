@@ -34,7 +34,6 @@ public class DetalleProveedor extends AppCompatActivity {
     private ProveedorServicioAdapter adapter;
     private final List<Servicio> listaServicios = new ArrayList<>();
     private TextView tvCantidadServicios;
-    private ImageButton btnPerfil;
 
 
 
@@ -42,7 +41,7 @@ public class DetalleProveedor extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        btnPerfil = findViewById(R.id.btnPerfil);
+
         setContentView(R.layout.activity_detalle_proveedor);
 
         servicioViewModel = new ViewModelProvider(
@@ -50,18 +49,21 @@ public class DetalleProveedor extends AppCompatActivity {
                 new ViewModelFactory(getApplication())
         ).get(ServicioViewModel.class);
 
-
         MaterialToolbar toolbar = findViewById(R.id.toolbarProveedor);
+
         toolbar.setNavigationOnClickListener(v -> cerrarSesion());
 
-
         ImageButton btnPerfil = toolbar.findViewById(R.id.btnPerfil);
+
         if (btnPerfil != null) {
             btnPerfil.setOnClickListener(v -> {
-                findViewById(R.id.contenedorFragments).setVisibility(View.VISIBLE);
+                findViewById(R.id.contenedorFragments)
+                        .setVisibility(View.VISIBLE);
+
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.contenedorFragments, new FragmentPerfilProveedor())
+                        .replace(R.id.contenedorFragments,
+                                new FragmentPerfilProveedor())
                         .addToBackStack(null)
                         .commit();
             });
@@ -69,17 +71,22 @@ public class DetalleProveedor extends AppCompatActivity {
 
         tvCantidadServicios = findViewById(R.id.tvCantidadServicios);
 
-
         RecyclerView rvAgenda = findViewById(R.id.rvAgendaProveedor);
         rvAgenda.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new ProveedorServicioAdapter(listaServicios,
+        adapter = new ProveedorServicioAdapter(
+                listaServicios,
                 new ProveedorServicioAdapter.OnServicioClickListener() {
+
                     @Override
                     public void onConfirmar(Servicio servicio) {
                         servicioViewModel.confirmarServicio(servicio.getId());
-                        Toast.makeText(DetalleProveedor.this,
-                                "Servicio confirmado", Toast.LENGTH_SHORT).show();
+
+                        Toast.makeText(
+                                DetalleProveedor.this,
+                                "Servicio confirmado",
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
 
                     @Override
@@ -90,38 +97,60 @@ public class DetalleProveedor extends AppCompatActivity {
 
         rvAgenda.setAdapter(adapter);
 
-
         String uid = FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : "";
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : "";
 
         if (!uid.isEmpty()) {
-            // Lista completa de servicios
-            servicioViewModel.getServiciosProveedor(uid).observe(this, servicios -> {
-                listaServicios.clear();
-                if (servicios != null) listaServicios.addAll(servicios);
-                adapter.notifyDataSetChanged();
-            });
 
-            // Contador pendientes de hoy
-            servicioViewModel.getPendientesHoy(uid).observe(this, pendientes -> {
-                int count = pendientes != null ? pendientes.size() : 0;
-                tvCantidadServicios.setText(count + " Pendientes");
-            });
+            servicioViewModel.getServiciosProveedor(uid)
+                    .observe(this, servicios -> {
+
+                        listaServicios.clear();
+
+                        if (servicios != null) {
+                            listaServicios.addAll(servicios);
+                        }
+
+                        adapter.notifyDataSetChanged();
+                    });
+
+            servicioViewModel.getPendientesHoy(uid)
+                    .observe(this, pendientes -> {
+
+                        int count = pendientes != null
+                                ? pendientes.size()
+                                : 0;
+
+                        tvCantidadServicios.setText(count + " Pendientes");
+                    });
         }
 
-        // Resultado de operaciones
-        servicioViewModel.getErrorMensaje().observe(this, error -> {
-            if (error != null && !error.isEmpty()) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
-                servicioViewModel.limpiarError();
-            }
-        });
+        servicioViewModel.getErrorMensaje()
+                .observe(this, error -> {
 
-        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                findViewById(R.id.contenedorFragments).setVisibility(View.GONE);
-            }
-        });
+                    if (error != null && !error.isEmpty()) {
+
+                        Toast.makeText(
+                                this,
+                                error,
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        servicioViewModel.limpiarError();
+                    }
+                });
+
+        getSupportFragmentManager()
+                .addOnBackStackChangedListener(() -> {
+
+                    if (getSupportFragmentManager()
+                            .getBackStackEntryCount() == 0) {
+
+                        findViewById(R.id.contenedorFragments)
+                                .setVisibility(View.GONE);
+                    }
+                });
     }
 
 

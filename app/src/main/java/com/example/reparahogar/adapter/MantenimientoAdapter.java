@@ -26,11 +26,6 @@ public class MantenimientoAdapter extends RecyclerView.Adapter<MantenimientoAdap
     private final List<Servicio> lista;
     private final OnCalificarListener onCalificarListener;
 
-//    public MantenimientoAdapter(List<Servicio> lista,
-//                                @Nullable OnCalificarListener onCalificarListener) {
-//        this.lista = lista;
-//        this.onCalificarListener = onCalificarListener;
-//    }
     public MantenimientoAdapter(List<Servicio> lista,
                             @Nullable OnCalificarListener onCalificarListener) {
         this.lista = lista;
