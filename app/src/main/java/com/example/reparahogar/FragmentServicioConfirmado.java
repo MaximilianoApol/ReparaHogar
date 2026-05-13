@@ -7,13 +7,14 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+
 import androidx.fragment.app.Fragment;
+
+import com.example.reparahogar.model.Servicio;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class fragment_servicio_confirmado extends Fragment {
+public class FragmentServicioConfirmado extends Fragment {
 
     private String idCita;
     private FirebaseFirestore db;
@@ -50,8 +51,9 @@ public class fragment_servicio_confirmado extends Fragment {
         // Lógica para ACTUALIZAR FIRESTORE
         btnGuardar.setOnClickListener(v -> {
             if (idCita != null) {
-                db.collection("citas").document(idCita)
-                        .update("estado", "completado")
+                // DESPUÉS:
+                db.collection("servicios").document(idCita)
+                        .update("estado", Servicio.ESTADO_TERMINADO)
                         .addOnSuccessListener(aVoid -> {
                             Toast.makeText(getContext(), "Servicio Finalizado", Toast.LENGTH_SHORT).show();
                             getParentFragmentManager().popBackStack(); // Regresa a la agenda

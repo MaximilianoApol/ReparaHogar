@@ -11,10 +11,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.reparahogar.FragmentCalificacion;
 import com.example.reparahogar.MainActivity;
 import com.example.reparahogar.R;
-import com.example.reparahogar.fragment_servicio_confirmado;
+import com.example.reparahogar.FragmentServicioConfirmado;
 import com.example.reparahogar.model.Servicio;
 import com.example.reparahogar.viewmodel.ServicioViewModel;
 import com.example.reparahogar.viewmodel.ViewModelFactory;
@@ -118,7 +117,7 @@ public class DetalleProveedor extends AppCompatActivity {
     }
 
     private void abrirFragmentConfirmado(Servicio servicio) {
-        fragment_servicio_confirmado fragment = new fragment_servicio_confirmado();
+        FragmentServicioConfirmado fragment = new FragmentServicioConfirmado();
         Bundle args = new Bundle();
         args.putString("idCita",    servicio.getId());
         args.putString("categoria", servicio.getCategoria());

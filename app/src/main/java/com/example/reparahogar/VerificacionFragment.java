@@ -202,7 +202,11 @@ public class VerificacionFragment extends Fragment {
             return;
         }
 
-        // Convertir a constante del modelo
+        if (fotoUri == null) {
+            Toast.makeText(getContext(), "Agrega una foto de perfil", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String tipoModelo;
         switch (tipoServicioUI) {
             case "Agua / Plomería": tipoModelo = "PLOMERIA";     break;
@@ -218,24 +222,43 @@ public class VerificacionFragment extends Fragment {
             return;
         }
 
-        // Construir perfil del proveedor con los datos completados
         Proveedor perfil = new Proveedor();
         perfil.setUid(uid);
         perfil.setTipoServicio(tipoModelo);
         perfil.setLatitud(latReal);
         perfil.setLongitud(lngReal);
-        perfil.setVerificado(false); // El admin lo verificará manualmente
+        perfil.setVerificado(false);
 
-        // Si el usuario ya tiene nombre/correo/teléfono en Firestore,
-        // ProveedorRepository.guardar() solo actualiza los campos que mandamos.
-        // Aquí completamos lo que falta con lo que ya guardó AuthViewModel.
         authViewModel.getUsuarioActual().observe(getViewLifecycleOwner(), usuario -> {
             if (usuario != null) {
                 perfil.setNombre(usuario.getNombre());
                 perfil.setTelefono(usuario.getTelefono());
                 perfil.setCorreo(usuario.getCorreo());
             }
-            proveedorViewModel.guardarPerfil(perfil);
+
+            // ── Subir foto a Firebase Storage ──
+            com.google.firebase.storage.StorageReference ref =
+                    com.google.firebase.storage.FirebaseStorage.getInstance()
+                            .getReference()
+                            .child("fotos_proveedores/" + uid + ".jpg");
+
+            btnEnviar.setEnabled(false);
+            btnEnviar.setText("Subiendo foto...");
+
+            ref.putFile(fotoUri)
+                    .addOnSuccessListener(task ->
+                            ref.getDownloadUrl().addOnSuccessListener(url -> {
+                                perfil.setFotoUrl(url.toString());
+                                proveedorViewModel.guardarPerfil(perfil);
+                            })
+                    )
+                    .addOnFailureListener(e -> {
+                        // Falla la foto → guardar sin foto, no bloqueamos
+                        Toast.makeText(getContext(),
+                                "No se pudo subir la foto, continuando sin imagen.",
+                                Toast.LENGTH_SHORT).show();
+                        proveedorViewModel.guardarPerfil(perfil);
+                    });
         });
     }
 }
