@@ -53,7 +53,7 @@ public class FragmentAgendarServicio extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_mi_hogar, container, false);
+        return inflater.inflate(R.layout.fragment_agendar_servicio, container, false);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class FragmentAgendarServicio extends Fragment {
 
         // Vistas
         ImageButton btnBack     = view.findViewById(R.id.btnBack);
-        etDireccion             = (TextInputEditText) view.findViewById(R.id.txtDireccionCompleta);
+        etDireccion             = view.findViewById(R.id.txtDireccionCompleta);
         etFechaCita             = view.findViewById(R.id.etFechaCita);
         chipGroupHorarios       = view.findViewById(R.id.chipGroupHorarios);
         btnConfirmar            = view.findViewById(R.id.btnConfirmar);

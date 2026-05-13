@@ -54,16 +54,20 @@
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/txtDireccionCompleta"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="#F5F5F5"
-                android:padding="16dp"
-                android:text="Presiona el botón de arriba para obtener tu dirección..."
-                android:textColor="#666666" />
+                app:startIconDrawable="@drawable/ic_location">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/txtDireccionCompleta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Ingresa tu dirección" />
+            </com.google.android.material.textfield.TextInputLayout>
+
 
             <View
                 android:layout_width="match_parent"
