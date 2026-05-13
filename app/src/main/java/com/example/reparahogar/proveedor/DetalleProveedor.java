@@ -2,31 +2,42 @@ package com.example.reparahogar.proveedor;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.reparahogar.FragmentCalificacion;
 import com.example.reparahogar.MainActivity;
 import com.example.reparahogar.R;
-import com.example.reparahogar.fragment_servicio_confirmado; // Asegura que este nombre sea exacto
+import com.example.reparahogar.fragment_servicio_confirmado;
+import com.example.reparahogar.model.Servicio;
+import com.example.reparahogar.viewmodel.ServicioViewModel;
+import com.example.reparahogar.viewmodel.ViewModelFactory;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pantalla principal del proveedor.
+ *
+ * Muestra:
+ *  1. Contador de servicios PENDIENTES de hoy
+ *  2. RecyclerView con todos sus servicios
+ *  3. Al tocar un servicio vigente → BottomSheet (Confirmar / Finalizar)
+ */
 public class DetalleProveedor extends AppCompatActivity {
 
-    private RecyclerView rvAgendaProveedor;
-    private ProveedorAdapter adapter;
-    private List<Cita> listaCitas;
-    private FirebaseFirestore db;
+    private ServicioViewModel servicioViewModel;
+    private ProveedorServicioAdapter adapter;
+    private final List<Servicio> listaServicios = new ArrayList<>();
+    private TextView tvCantidadServicios;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,66 +45,69 @@ public class DetalleProveedor extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_detalle_proveedor);
 
-        db = FirebaseFirestore.getInstance();
-        listaCitas = new ArrayList<>();
+        // ── ViewModels ────────────────────────────────────────────────────────
+        servicioViewModel = new ViewModelProvider(
+                this,
+                new ViewModelFactory(getApplication())
+        ).get(ServicioViewModel.class);
 
-        // 1. Configurar UI básica
-        ImageButton btnPerfil = findViewById(R.id.btnPerfil);
+        // ── Toolbar ───────────────────────────────────────────────────────────
         MaterialToolbar toolbar = findViewById(R.id.toolbarProveedor);
-
         toolbar.setNavigationOnClickListener(v -> cerrarSesion());
 
-        // 2. Configurar RecyclerView
-        rvAgendaProveedor = findViewById(R.id.rvAgendaProveedor);
-        rvAgendaProveedor.setLayoutManager(new LinearLayoutManager(this));
+        // ── Contador pendientes ───────────────────────────────────────────────
+        tvCantidadServicios = findViewById(R.id.tvCantidadServicios);
 
-        // Inicializar el adapter con el Listener
-        adapter = new ProveedorAdapter(listaCitas, new ProveedorAdapter.OnCitaClickListener() {
-            @Override
-            public void onConfirmarClick(Cita cita) {
-                actualizarEstadoCita(cita.getIdCita(), "confirmado");
-            }
+        // ── RecyclerView ──────────────────────────────────────────────────────
+        RecyclerView rvAgenda = findViewById(R.id.rvAgendaProveedor);
+        rvAgenda.setLayoutManager(new LinearLayoutManager(this));
 
-            @Override
-            public void onFinalizarClick(Cita cita) {
-                abrirFragmentConfirmado(cita);
+        adapter = new ProveedorServicioAdapter(listaServicios,
+                new ProveedorServicioAdapter.OnServicioClickListener() {
+                    @Override
+                    public void onConfirmar(Servicio servicio) {
+                        servicioViewModel.confirmarServicio(servicio.getId());
+                        Toast.makeText(DetalleProveedor.this,
+                                "Servicio confirmado", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFinalizar(Servicio servicio) {
+                        abrirFragmentConfirmado(servicio);
+                    }
+                });
+
+        rvAgenda.setAdapter(adapter);
+
+        // ── Observar datos ────────────────────────────────────────────────────
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : "";
+
+        if (!uid.isEmpty()) {
+            // Lista completa de servicios
+            servicioViewModel.getServiciosProveedor(uid).observe(this, servicios -> {
+                listaServicios.clear();
+                if (servicios != null) listaServicios.addAll(servicios);
+                adapter.notifyDataSetChanged();
+            });
+
+            // Contador pendientes de hoy
+            servicioViewModel.getPendientesHoy(uid).observe(this, pendientes -> {
+                int count = pendientes != null ? pendientes.size() : 0;
+                tvCantidadServicios.setText(count + " Pendientes");
+            });
+        }
+
+        // Resultado de operaciones
+        servicioViewModel.getErrorMensaje().observe(this, error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                servicioViewModel.limpiarError();
             }
         });
-
-        rvAgendaProveedor.setAdapter(adapter);
-
-        // 3. Cargar datos desde Firebase
-        cargarCitasDesdeFirestore();
     }
 
-    private void cargarCitasDesdeFirestore() {
-        String uidProveedor = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        // Buscamos solo las citas asignadas a este proveedor
-        db.collection("citas")
-                .whereEqualTo("idProveedor", uidProveedor)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Toast.makeText(this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    listaCitas.clear();
-                    for (QueryDocumentSnapshot doc : value) {
-                        Cita cita = doc.toObject(Cita.class);
-                        cita.setIdCita(doc.getId()); // Aseguramos tener el ID del documento
-                        listaCitas.add(cita);
-                    }
-                    adapter.notifyDataSetChanged();
-                });
-    }
-
-    private void actualizarEstadoCita(String idCita, String nuevoEstado) {
-        db.collection("citas").document(idCita)
-                .update("estado", nuevoEstado)
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Estado actualizado", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-    }
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void cerrarSesion() {
         FirebaseAuth.getInstance().signOut();
@@ -103,18 +117,16 @@ public class DetalleProveedor extends AppCompatActivity {
         finish();
     }
 
-    public void abrirFragmentConfirmado(Cita cita) {
-        // Instancia del fragmento con el diseño verde de éxito
+    private void abrirFragmentConfirmado(Servicio servicio) {
         fragment_servicio_confirmado fragment = new fragment_servicio_confirmado();
-
         Bundle args = new Bundle();
-        args.putString("idCita", cita.getIdCita());
-        args.putString("categoria", cita.getCategoria());
-        args.putString("fecha", cita.getFecha());
+        args.putString("idCita",    servicio.getId());
+        args.putString("categoria", servicio.getCategoria());
+        args.putString("fecha",     servicio.getFecha());
         fragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_proveedor, fragment) // 'main' debe ser el id del contenedor en activity_detalle_proveedor.xml
+                .replace(R.id.main_proveedor, fragment)
                 .addToBackStack(null)
                 .commit();
     }

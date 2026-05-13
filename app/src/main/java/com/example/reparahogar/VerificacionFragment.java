@@ -1,9 +1,13 @@
 package com.example.reparahogar;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
@@ -11,103 +15,227 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.reparahogar.model.Proveedor;
+import com.example.reparahogar.viewmodel.AuthViewModel;
+import com.example.reparahogar.viewmodel.ProveedorViewModel;
+import com.example.reparahogar.viewmodel.ViewModelFactory;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.firebase.auth.FirebaseAuth;
 
+/**
+ * Pantalla de verificación del proveedor. Permite:
+ *  1. Agregar foto de perfil (galería)
+ *  2. Seleccionar tipo de servicio (spinner)
+ *  3. Autorizar ubicación en tiempo real
+ *  4. Enviar para verificación → guarda en Firestore y Room
+ */
 public class VerificacionFragment extends Fragment {
 
-    private MaterialCheckBox checkUbicacion;
-    private MaterialButton btnEnviar;
-    private AutoCompleteTextView spinnerServicios;
-    private AppDatabase db;
-    private FusedLocationProviderClient fusedLocationClient;
+    private AuthViewModel     authViewModel;
+    private ProveedorViewModel proveedorViewModel;
 
-    // Este objeto se encarga de mostrar la ventanita de "Permitir"
+    private MaterialCheckBox   checkUbicacion;
+    private MaterialButton     btnEnviar;
+    private AutoCompleteTextView spinnerServicios;
+    private ShapeableImageView imgSelfie;
+
+    private FusedLocationProviderClient fusedLocationClient;
+    private double latReal = 0.0, lngReal = 0.0;
+    private Uri    fotoUri  = null;
+
+    private static final String[] SERVICIOS = {
+            "Agua / Plomería", "Electricidad", "Gas"
+    };
+
+    // ── Launchers ─────────────────────────────────────────────────────────────
+
+    private final ActivityResultLauncher<String> pickImageLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    fotoUri = uri;
+                    imgSelfie.setImageURI(uri);
+                }
+            });
+
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-                Boolean fineLocationGranted = result.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false);
-                Boolean coarseLocationGranted = result.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false);
-
-                if (fineLocationGranted != null && fineLocationGranted) {
+                Boolean fine   = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION,   false);
+                Boolean coarse = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                if (Boolean.TRUE.equals(fine) || Boolean.TRUE.equals(coarse)) {
                     obtenerUbicacionReal();
                 } else {
-                    Toast.makeText(getContext(), "Permiso denegado. No podemos verificar tu zona de trabajo.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(),
+                            "Permiso de ubicación denegado. No aparecerás en búsquedas cercanas.",
+                            Toast.LENGTH_LONG).show();
                     checkUbicacion.setChecked(false);
                 }
             });
 
+    // ── Ciclo de vida ─────────────────────────────────────────────────────────
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Inflamos el layout que creaste
-        View view = inflater.inflate(R.layout.fragment_verificacion, container, false);
-
-        // Inicializamos la base de datos y los componentes
-        db = AppDatabase.getDatabase(getContext());
-        checkUbicacion = view.findViewById(R.id.checkPermisoUbicacion);
-        btnEnviar = view.findViewById(R.id.btnEnviarVerificacion);
-        spinnerServicios = view.findViewById(R.id.spinnerServicios);
-
-        // El botón empieza desactivado hasta que marquen el checkbox
-        btnEnviar.setEnabled(false);
-
-        // Lógica del Checkbox para habilitar el botón
-        checkUbicacion.setOnCheckedChangeListener((button, isChecked) -> {
-            btnEnviar.setEnabled(isChecked);
-        });
-
-        // Lógica del Botón Enviar
-        btnEnviar.setOnClickListener(v -> {
-            registrarTecnico();
-        });
-
-        return view; // ¡ESTE ES EL RETURN QUE FALTABA!
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_verificacion, container, false);
     }
-    private double latReal = 0.0, lngReal = 0.0;
 
-    private void obtenerUbicacionReal() {
-        try {
-            fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
-                if (location != null) {
-                    latReal = location.getLatitude();
-                    lngReal = location.getLongitude();
-                    Toast.makeText(getContext(), "Ubicación detectada con éxito", Toast.LENGTH_SHORT).show();
-                }
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+
+        // ViewModels (comparten con MainActivity / AuthViewModel)
+        authViewModel = new ViewModelProvider(
+                requireActivity(),
+                new ViewModelFactory(requireActivity().getApplication())
+        ).get(AuthViewModel.class);
+
+        proveedorViewModel = new ViewModelProvider(
+                requireActivity(),
+                new ViewModelFactory(requireActivity().getApplication())
+        ).get(ProveedorViewModel.class);
+
+        // Vistas
+        imgSelfie       = view.findViewById(R.id.imgSelfie);
+        spinnerServicios= view.findViewById(R.id.spinnerServicios);
+        checkUbicacion  = view.findViewById(R.id.checkPermisoUbicacion);
+        btnEnviar       = view.findViewById(R.id.btnEnviarVerificacion);
+
+        // Spinner con tipos de servicio
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                SERVICIOS);
+        spinnerServicios.setAdapter(spinnerAdapter);
+
+        // El botón de envío requiere que el checkbox esté marcado
+        btnEnviar.setEnabled(false);
+        checkUbicacion.setOnCheckedChangeListener((btn, checked) -> {
+            if (checked) {
+                solicitarPermisosUbicacion();
+            } else {
+                latReal = 0.0;
+                lngReal = 0.0;
+            }
+            btnEnviar.setEnabled(checked);
+        });
+
+        // Tap en foto → abrir galería
+        imgSelfie.setOnClickListener(v ->
+                pickImageLauncher.launch("image/*"));
+
+        // Botón enviar
+        btnEnviar.setOnClickListener(v -> enviarVerificacion());
+
+        // Observar errores / carga
+        proveedorViewModel.getCargando().observe(getViewLifecycleOwner(), cargando -> {
+            btnEnviar.setEnabled(!cargando && checkUbicacion.isChecked());
+            btnEnviar.setText(cargando ? "Enviando..." : "Enviar para verificación");
+        });
+
+        proveedorViewModel.getOperacionOk().observe(getViewLifecycleOwner(), ok -> {
+            if (Boolean.TRUE.equals(ok)) {
+                Toast.makeText(getContext(),
+                        "Perfil enviado. Pronto será verificado.", Toast.LENGTH_LONG).show();
+                proveedorViewModel.limpiarOperacionOk();
+                // Navegar a DetalleProveedor cuando el admin verifique;
+                // por ahora regresamos al login limpio
+                authViewModel.cerrarSesion();
+            }
+        });
+
+        proveedorViewModel.getErrorMensaje().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
+                proveedorViewModel.limpiarError();
+            }
+        });
+    }
+
+    // ── Ubicación ─────────────────────────────────────────────────────────────
+
+    private void solicitarPermisosUbicacion() {
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            obtenerUbicacionReal();
+        } else {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
             });
-        } catch (SecurityException e) {
-            e.printStackTrace();
         }
     }
 
-    private void registrarTecnico() {
-        String servicioSeleccionado = spinnerServicios.getText().toString();
+    @SuppressWarnings("MissingPermission")
+    private void obtenerUbicacionReal() {
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(requireActivity(), location -> {
+                    if (location != null) {
+                        latReal = location.getLatitude();
+                        lngReal = location.getLongitude();
+                        Toast.makeText(getContext(),
+                                "Ubicación detectada ✓", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(),
+                                "No se pudo obtener ubicación; activa el GPS.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
 
-        if (servicioSeleccionado.isEmpty()) {
-            Toast.makeText(getContext(), "Por favor selecciona un servicio", Toast.LENGTH_SHORT).show();
+    // ── Envío ──────────────────────────────────────────────────────────────────
+
+    private void enviarVerificacion() {
+        String tipoServicioUI = spinnerServicios.getText().toString().trim();
+        if (tipoServicioUI.isEmpty()) {
+            Toast.makeText(getContext(), "Selecciona un tipo de servicio", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Convertir a constante del modelo
+        String tipoModelo;
+        switch (tipoServicioUI) {
+            case "Agua / Plomería": tipoModelo = "PLOMERIA";     break;
+            case "Electricidad":    tipoModelo = "ELECTRICIDAD"; break;
+            case "Gas":             tipoModelo = "GAS";          break;
+            default:                tipoModelo = tipoServicioUI.toUpperCase();
+        }
 
-        new Thread(() -> {
-            // Creamos el objeto Proveedor con los nuevos campos
-            Proveedor nuevoTecnico = new Proveedor();
-            nuevoTecnico.setNombre("Técnico de Prueba");
-            nuevoTecnico.setServicios(servicioSeleccionado);
-            nuevoTecnico.setLatitud(latReal);
-            nuevoTecnico.setLongitud(lngReal);
-            nuevoTecnico.setVerificado(false);
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : "";
+        if (uid.isEmpty()) {
+            Toast.makeText(getContext(), "Sesión expirada", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            // Guardamos en la base de datos (Room)
-            db.appDao().insertarProveedor(nuevoTecnico);
+        // Construir perfil del proveedor con los datos completados
+        Proveedor perfil = new Proveedor();
+        perfil.setUid(uid);
+        perfil.setTipoServicio(tipoModelo);
+        perfil.setLatitud(latReal);
+        perfil.setLongitud(lngReal);
+        perfil.setVerificado(false); // El admin lo verificará manualmente
 
-            // Regresamos al hilo principal para mostrar el mensaje
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> {
-                    Toast.makeText(getContext(), "Registro guardado en base de datos local", Toast.LENGTH_LONG).show();
-                });
+        // Si el usuario ya tiene nombre/correo/teléfono en Firestore,
+        // ProveedorRepository.guardar() solo actualiza los campos que mandamos.
+        // Aquí completamos lo que falta con lo que ya guardó AuthViewModel.
+        authViewModel.getUsuarioActual().observe(getViewLifecycleOwner(), usuario -> {
+            if (usuario != null) {
+                perfil.setNombre(usuario.getNombre());
+                perfil.setTelefono(usuario.getTelefono());
+                perfil.setCorreo(usuario.getCorreo());
             }
-        }).start();
+            proveedorViewModel.guardarPerfil(perfil);
+        });
     }
 }

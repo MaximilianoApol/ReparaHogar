@@ -1,89 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    tools:context=".FragmentTecnicosDisponibles">
 
-
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarTecnicos"
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#00468B"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="match_parent"
+        android:text="@string/hello_blank_fragment" />
 
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="@color/white" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Técnicos disponibles"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </com.google.android.material.appbar.MaterialToolbar>
-
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnObtenerUbicacion"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:text="Detectar mi ubicación"
-        android:textColor="#333333"
-        app:cornerRadius="12dp"
-        app:icon="@drawable/ic_location"
-        app:iconTint="#333333"
-        app:layout_constraintBottom_toTopOf="@+id/rvTecnicos"
-        app:layout_constraintTop_toBottomOf="@+id/btnSolicitar"
-        app:strokeColor="#333333"
-        tools:layout_editor_absoluteX="0dp" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSolicitar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="84dp"
-        android:backgroundTint="#2E3B8E"
-        android:text="Solicitar servicio"
-        app:cornerRadius="12dp"
-        app:icon="@drawable/ic_check_circle_green"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarTecnicos" />
-
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvTecnicos"
-        android:layout_width="407dp"
-        android:layout_height="555dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnViewMore"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnSolicitar"
-        app:layout_constraintVertical_bias="0.809" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnViewMore"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="View 21 proveedores"
-        android:textColor="@color/black"
-        app:strokeColor="#CCCCCC"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
