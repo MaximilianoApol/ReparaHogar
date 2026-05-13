@@ -18,26 +18,11 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-/**
- * Pantalla de registro de usuario nuevo.
- * Layout: activity_crear_cuenta.xml ✅ (tu layout existente)
- *
- * IDs usados:
- *   tilNombre, tilCorreo, tilTelefono → TextInputLayout
- *   tilPassword, tilConfirmPassword   → TextInputLayout
- *   chkOwner    → "Soy dueño de casa"      → CLIENTE
- *   chkProvider → "Soy proveedor de servicio" → PROVEEDOR
- *   btnLogin    → botón de acción (cambiamos texto a "Crear cuenta")
- *
- * Flujo:
- *   CLIENTE   → AuthViewModel.registrar() → navegarCliente → DetalleHogar
- *   PROVEEDOR → AuthViewModel.registrar() → crea perfil base → navegarVerificacion
- */
 public class RegistroFragment extends Fragment {
 
     private AuthViewModel authViewModel;
 
-    // Vistas — coinciden con los IDs de activity_crear_cuenta.xml
+
     private TextInputLayout   tilNombre;
     private TextInputLayout   tilCorreo;
     private TextInputLayout   tilTelefono;
@@ -77,7 +62,7 @@ public class RegistroFragment extends Fragment {
         observarViewModel();
     }
 
-    // ── Vistas ────────────────────────────────────────────────────────────────
+
 
     private void enlazarVistas(View view) {
         tilNombre          = view.findViewById(R.id.tilNombre);
@@ -99,9 +84,6 @@ public class RegistroFragment extends Fragment {
         // El layout tiene texto "Iniciar sesión" por defecto — lo corregimos
         btnCrearCuenta.setText("Crear cuenta");
     }
-
-    // ── CheckBoxes excluyentes ────────────────────────────────────────────────
-
     private void configurarCheckBoxes() {
         // Solo uno puede estar marcado a la vez
         chkOwner.setOnCheckedChangeListener((v, isChecked) -> {
@@ -111,8 +93,6 @@ public class RegistroFragment extends Fragment {
             if (isChecked) chkOwner.setChecked(false);
         });
     }
-
-    // ── Listeners ─────────────────────────────────────────────────────────────
 
     private void configurarListeners() {
         btnCrearCuenta.setOnClickListener(v -> intentarRegistro());
@@ -126,8 +106,6 @@ public class RegistroFragment extends Fragment {
             if (f) tilConfirmPassword.setError(null);
         });
     }
-
-    // ── Observadores ─────────────────────────────────────────────────────────
 
     private void observarViewModel() {
 
@@ -143,11 +121,9 @@ public class RegistroFragment extends Fragment {
             }
         });
 
-        // La navegación (Cliente → DetalleHogar, Proveedor → VerificacionFragment)
-        // la maneja MainActivity — no duplicamos aquí.
+
     }
 
-    // ── Registro ──────────────────────────────────────────────────────────────
 
     private void intentarRegistro() {
         // Limpiar errores visuales
@@ -181,8 +157,6 @@ public class RegistroFragment extends Fragment {
         boolean esProveedor = chkProvider.isChecked();
         authViewModel.registrar(nombre, correo, telefono, password, esProveedor);
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void limpiarErrores() {
         tilNombre.setError(null);

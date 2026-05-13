@@ -10,12 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.reparahogar.model.Calificacion;
 import com.example.reparahogar.repository.CalificacionRepository;
 
-/**
- * Maneja el flujo de calificación:
- * Cliente califica al proveedor cuando el servicio queda TERMINADO.
- *
- * La UI solo llama guardarCalificacion() y observa el resultado.
- */
+
 public class CalificacionViewModel extends AndroidViewModel {
 
     private final CalificacionRepository calificacionRepository;
@@ -29,16 +24,7 @@ public class CalificacionViewModel extends AndroidViewModel {
         calificacionRepository = new CalificacionRepository(application);
     }
 
-    // ── Guardar calificación ──────────────────────────────────────────────────
 
-    /**
-     * Valida y guarda la calificación del cliente al proveedor.
-     *
-     * @param servicioId   ID del servicio que se califica
-     * @param proveedorUid UID del proveedor que recibe la calificación
-     * @param clienteUid   UID del cliente que califica
-     * @param puntuacion   Valor entre 1 y 5
-     */
     public void guardarCalificacion(String servicioId, String proveedorUid,
                                     String clienteUid, int puntuacion) {
 
@@ -70,8 +56,6 @@ public class CalificacionViewModel extends AndroidViewModel {
                 });
     }
 
-    // ── Validaciones ──────────────────────────────────────────────────────────
-
     private boolean validar(String servicioId, String proveedorUid,
                             String clienteUid, int puntuacion) {
         if (servicioId == null || servicioId.isEmpty()) {
@@ -92,8 +76,6 @@ public class CalificacionViewModel extends AndroidViewModel {
         }
         return true;
     }
-
-    // ── Getters LiveData ──────────────────────────────────────────────────────
 
     public LiveData<Boolean> getCargando()             { return cargando; }
     public LiveData<String>  getErrorMensaje()         { return errorMensaje; }

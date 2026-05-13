@@ -29,11 +29,7 @@ import com.google.android.material.button.MaterialButton;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Muestra la lista de técnicos disponibles cercanos al cliente.
- * Recibe "categoria" y "especificacion" del fragmento anterior.
- * Al seleccionar un técnico y presionar "Solicitar servicio" navega a FragmentAgendarServicio.
- */
+
 public class FragmentTecnicosDisponibles extends Fragment {
 
     private ProveedorViewModel proveedorViewModel;

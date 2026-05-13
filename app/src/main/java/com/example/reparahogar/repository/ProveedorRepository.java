@@ -15,15 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Fuente única de verdad para Proveedor.
- *
- * La búsqueda por cercanía funciona así:
- *  1. Consulta Firestore: todos los proveedores del tipo de servicio solicitado.
- *  2. Filtra en Java los que están dentro del radio (10 km, luego 25 km).
- *  3. Guarda el resultado en Room como caché.
- *  4. Retorna un LiveData que la UI observa.
- */
+
 public class ProveedorRepository {
 
     private static final String COLECCION = "proveedores";

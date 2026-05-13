@@ -16,11 +16,7 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 
-/**
- * Adapter para mostrar servicios solicitados por el cliente.
- * Usado en DetalleHogar (rvMantenimientos) y en NotificacionesFragment (rvNotificaciones).
- * Al tocar un ítem TERMINADO, llama a onCalificarListener para calificar.
- */
+
 public class MantenimientoAdapter extends RecyclerView.Adapter<MantenimientoAdapter.ViewHolder> {
 
     public interface OnCalificarListener {

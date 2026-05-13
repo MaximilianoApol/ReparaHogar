@@ -21,10 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Muestra la lista de servicios solicitados con su estado actual.
- * Cuando el estado es TERMINADO, el cliente puede calificar al proveedor.
- */
+
 public class FragmentNotificaciones extends Fragment {
 
     private ServicioViewModel servicioViewModel;

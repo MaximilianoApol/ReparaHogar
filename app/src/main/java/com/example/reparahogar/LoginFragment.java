@@ -17,13 +17,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-/**
- * Pantalla de inicio de sesión.
- * Layout: fragment_login.xml ✅
- *
- * Obtiene el AuthViewModel desde la Activity para compartirlo —
- * así MainActivity recibe los LiveData de navegación correctamente.
- */
+
 public class LoginFragment extends Fragment {
 
     private AuthViewModel authViewModel;

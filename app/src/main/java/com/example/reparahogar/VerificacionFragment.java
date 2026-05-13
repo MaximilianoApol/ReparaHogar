@@ -31,13 +31,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.firebase.auth.FirebaseAuth;
 
-/**
- * Pantalla de verificación del proveedor.
- *
- * - Sin Firebase Storage (requiere plan de pago).
- * - El proveedor se marca como verificado=true automáticamente.
- * - Al enviar con éxito navega directo a DetalleProveedor.
- */
 public class VerificacionFragment extends Fragment {
 
     private AuthViewModel      authViewModel;
@@ -57,7 +50,7 @@ public class VerificacionFragment extends Fragment {
             "Agua / Plomería", "Electricidad", "Gas"
     };
 
-    // ── Permiso de ubicación ──────────────────────────────────────────────────
+
 
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -73,7 +66,7 @@ public class VerificacionFragment extends Fragment {
                 }
             });
 
-    // ── Ciclo de vida ─────────────────────────────────────────────────────────
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -109,7 +102,7 @@ public class VerificacionFragment extends Fragment {
         if (containerSelfie != null) containerSelfie.setVisibility(View.GONE);
         if (labelSelfie     != null) labelSelfie.setVisibility(View.GONE);
 
-        // Spinner
+
         spinnerServicios.setAdapter(new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
@@ -125,7 +118,7 @@ public class VerificacionFragment extends Fragment {
 
         btnEnviar.setOnClickListener(v -> enviarVerificacion());
 
-        // ── Observers (registrados una sola vez) ──────────────────────────────
+
 
         // Cachear usuario para no abrir observer nuevo en cada tap
         authViewModel.getUsuarioActual().observe(getViewLifecycleOwner(), usuario -> {
@@ -151,8 +144,6 @@ public class VerificacionFragment extends Fragment {
             }
         });
     }
-
-    // ── UI ────────────────────────────────────────────────────────────────────
 
     private void actualizarBoton() {
         btnEnviar.setEnabled(checkUbicacion.isChecked() && !envioEnProceso);
@@ -190,7 +181,6 @@ public class VerificacionFragment extends Fragment {
                 });
     }
 
-    // ── Envío ─────────────────────────────────────────────────────────────────
 
     private void enviarVerificacion() {
         if (envioEnProceso) return;
@@ -247,7 +237,6 @@ public class VerificacionFragment extends Fragment {
         proveedorViewModel.guardarPerfil(perfil);
     }
 
-    // ── Navegación ────────────────────────────────────────────────────────────
 
     private void irADetalleProveedor() {
         Intent intent = new Intent(requireActivity(), DetalleProveedor.class);

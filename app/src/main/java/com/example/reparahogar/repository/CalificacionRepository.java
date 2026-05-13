@@ -11,14 +11,6 @@ import com.example.reparahogar.utils.ExecutorUtils;
 import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-/**
- * Guarda la calificación y recalcula el promedio del proveedor.
- *
- * Flujo:
- *  1. Guardar calificación en Firestore + Room.
- *  2. Consultar el promedio real desde Firestore (avg de todas las calificaciones).
- *  3. Actualizar el campo calificacionPromedio y totalServicios en proveedores/.
- */
 public class CalificacionRepository {
 
     private static final String COLECCION = "calificaciones";

@@ -15,13 +15,7 @@ import com.example.reparahogar.model.Proveedor;
 import com.example.reparahogar.model.Servicio;
 import com.example.reparahogar.model.Usuario;
 
-/**
- * Base de datos local Room.
- *
- * Singleton: solo existe una instancia en toda la app.
- * Si cambias el esquema (agregar columna, renombrar tabla),
- * incrementa el version y agrega una Migration.
- */
+
 @Database(
         entities = {
                 Usuario.class,
@@ -43,10 +37,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract ServicioDao servicioDao();
     public abstract CalificacionDao calificacionDao();
 
-    /**
-     * Obtiene la instancia única de la base de datos.
-     * Usa double-checked locking para thread-safety.
-     */
+
     public static AppDatabase getInstance(Context context) {
         if (instancia == null) {
             synchronized (AppDatabase.class) {

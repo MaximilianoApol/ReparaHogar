@@ -23,11 +23,7 @@ import com.example.reparahogar.viewmodel.ViewModelFactory;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 
-/**
- * Perfil del PROVEEDOR.
- * Muestra nombre, teléfono y correo desde Firestore/Room.
- * Los campos con ic_edit son editables al tocarlos.
- */
+
 public class FragmentPerfilProveedor extends Fragment {
 
     private UsuarioViewModel usuarioViewModel;

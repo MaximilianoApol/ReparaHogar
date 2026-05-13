@@ -13,7 +13,7 @@ public interface CalificacionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertar(Calificacion calificacion);
 
-    /** Verifica si ya existe calificación para un servicio (evita duplicados). */
+
     @Query("SELECT COUNT(*) FROM calificaciones WHERE servicioId = :servicioId")
     int contarPorServicio(String servicioId);
 

@@ -19,10 +19,7 @@ import com.example.reparahogar.viewmodel.ViewModelFactory;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 
-/**
- * Pantalla de calificación: el cliente califica al proveedor del 1 al 5.
- * Recibe "servicioId" y "proveedorUid" como argumentos.
- */
+
 public class FragmentCalificacion extends Fragment {
 
     private CalificacionViewModel calificacionViewModel;

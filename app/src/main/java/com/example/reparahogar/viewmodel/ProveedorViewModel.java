@@ -16,13 +16,6 @@ import com.google.android.gms.tasks.CancellationTokenSource;
 
 import java.util.List;
 
-/**
- * Maneja dos responsabilidades:
- *
- * 1. CLIENTE: buscar proveedores cercanos por tipo de servicio + ubicación.
- * 2. PROVEEDOR: cargar/actualizar su propio perfil y actualizar su ubicación
- *    en Firestore cada vez que abre la app.
- */
 public class ProveedorViewModel extends AndroidViewModel {
 
     private final ProveedorRepository proveedorRepository;
@@ -34,7 +27,7 @@ public class ProveedorViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> operacionOk       = new MutableLiveData<>();
     private final MutableLiveData<Boolean> ubicacionObtenida = new MutableLiveData<>();
 
-    // Coordenadas del cliente (para búsqueda de cercanos)
+
     private double latitudCliente = 0.0;
     private double longitudCliente = 0.0;
 
@@ -48,16 +41,6 @@ public class ProveedorViewModel extends AndroidViewModel {
         fusedLocationClient   = LocationServices.getFusedLocationProviderClient(application);
     }
 
-    // ── Ubicación del CLIENTE ─────────────────────────────────────────────────
-
-    /**
-     * Obtiene la última ubicación conocida del dispositivo.
-     * Requiere que el permiso ACCESS_FINE_LOCATION ya esté concedido.
-     * La UI debe verificar el permiso antes de llamar este método.
-     *
-     * Cuando termina, actualiza latitudCliente/longitudCliente
-     * y emite ubicacionObtenida = true para que la UI dispare la búsqueda.
-     */
     @SuppressWarnings("MissingPermission")
     public void obtenerUbicacionCliente() {
         cargando.setValue(true);
@@ -84,14 +67,6 @@ public class ProveedorViewModel extends AndroidViewModel {
         });
     }
 
-    // ── Búsqueda de proveedores cercanos ──────────────────────────────────────
-
-    /**
-     * Busca proveedores del tipo indicado cercanos al cliente.
-     * Requiere haber llamado obtenerUbicacionCliente() primero.
-     *
-     * @param tipoServicio "PLOMERIA", "ELECTRICIDAD" o "GAS"
-     */
     public LiveData<List<Proveedor>> buscarProveedoresCercanos(String tipoServicio) {
         if (latitudCliente == 0.0 && longitudCliente == 0.0) {
             errorMensaje.setValue("Primero detecta tu ubicación");
@@ -107,12 +82,7 @@ public class ProveedorViewModel extends AndroidViewModel {
         return proveedoresCercanos;
     }
 
-    // ── Perfil del PROVEEDOR ──────────────────────────────────────────────────
 
-    /**
-     * Carga el perfil del proveedor autenticado.
-     * Retorna siempre el mismo LiveData para evitar múltiples suscripciones.
-     */
     public LiveData<Proveedor> getProveedorActual(String uid) {
         if (proveedorActual == null) {
             proveedorActual = proveedorRepository.obtenerProveedor(uid);
@@ -120,9 +90,7 @@ public class ProveedorViewModel extends AndroidViewModel {
         return proveedorActual;
     }
 
-    /**
-     * Guarda el perfil completo del proveedor (llamado tras verificación).
-     */
+
     public void guardarPerfil(Proveedor proveedor) {
         cargando.setValue(true);
         proveedorRepository.guardar(proveedor, new ProveedorRepository.OnResultListener() {
@@ -140,11 +108,6 @@ public class ProveedorViewModel extends AndroidViewModel {
         });
     }
 
-    /**
-     * Actualiza la ubicación del proveedor en Firestore + Room.
-     * Se llama cada vez que el proveedor abre su Home.
-     * Requiere permiso de ubicación concedido.
-     */
     @SuppressWarnings("MissingPermission")
     public void actualizarUbicacionProveedor(String uid) {
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -164,8 +127,6 @@ public class ProveedorViewModel extends AndroidViewModel {
         });
         // No mostramos errores al usuario por esta operación — es silenciosa
     }
-
-    // ── Getters LiveData ──────────────────────────────────────────────────────
 
     public LiveData<Boolean> getCargando()          { return cargando; }
     public LiveData<String>  getErrorMensaje()      { return errorMensaje; }

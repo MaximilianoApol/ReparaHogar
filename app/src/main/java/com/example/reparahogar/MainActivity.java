@@ -10,21 +10,7 @@ import com.example.reparahogar.proveedor.DetalleProveedor;
 import com.example.reparahogar.viewmodel.AuthViewModel;
 import com.example.reparahogar.viewmodel.ViewModelFactory;
 
-/**
- * Punto de entrada de la app.
- *
- * Responsabilidades:
- *  1. Crea el AuthViewModel a nivel de Activity para que LoginFragment
- *     y RegistroFragment puedan compartirlo.
- *  2. Si hay sesión activa → navega directo.
- *  3. Si no hay sesión     → carga LoginFragment.
- *
- * CLAVE: los Fragments obtienen el mismo AuthViewModel usando
- *   ViewModelFactory.obtener(requireActivity(), AuthViewModel.class)
- * Eso garantiza que observan los mismos LiveData que emite esta Activity.
- *
- * activity_main.xml ya tiene FrameLayout id="main_container" ✅
- */
+
 public class MainActivity extends AppCompatActivity {
 
     private AuthViewModel authViewModel;

@@ -6,19 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-/**
- * Factory para crear cualquier ViewModel de la app que extienda AndroidViewModel.
- *
- * Uso en un Fragment:
- *
- *   AuthViewModel vm = new ViewModelProvider(this,
- *       new ViewModelFactory(requireActivity().getApplication()))
- *       .get(AuthViewModel.class);
- *
- * O más corto con el helper de abajo:
- *
- *   AuthViewModel vm = ViewModelFactory.of(this, AuthViewModel.class);
- */
+
 public class ViewModelFactory extends ViewModelProvider.AndroidViewModelFactory {
 
     private final Application application;
@@ -35,14 +23,6 @@ public class ViewModelFactory extends ViewModelProvider.AndroidViewModelFactory 
         return super.create(modelClass);
     }
 
-    // ── Helper estático ───────────────────────────────────────────────────────
-
-    /**
-     * Crea o recupera un ViewModel ya existente para el Fragment o Activity dado.
-     *
-     * Ejemplo de uso en Fragment:
-     *   AuthViewModel vm = ViewModelFactory.obtener(this, AuthViewModel.class);
-     */
     public static <T extends ViewModel> T obtener(
             @NonNull androidx.fragment.app.Fragment fragment,
             @NonNull Class<T> claseViewModel) {
@@ -52,9 +32,6 @@ public class ViewModelFactory extends ViewModelProvider.AndroidViewModelFactory 
                 .get(claseViewModel);
     }
 
-    /**
-     * Versión para Activity.
-     */
     public static <T extends ViewModel> T obtener(
             @NonNull androidx.appcompat.app.AppCompatActivity activity,
             @NonNull Class<T> claseViewModel) {

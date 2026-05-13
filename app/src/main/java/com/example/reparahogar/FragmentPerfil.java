@@ -17,10 +17,7 @@ import com.example.reparahogar.viewmodel.UsuarioViewModel;
 import com.example.reparahogar.viewmodel.ViewModelFactory;
 import com.google.firebase.auth.FirebaseAuth;
 
-/**
- * Muestra el perfil del cliente (nombre, teléfono, correo).
- * Los datos se cargan desde Room (sincronizado con Firestore).
- */
+
 public class FragmentPerfil extends Fragment {
 
     private UsuarioViewModel usuarioViewModel;

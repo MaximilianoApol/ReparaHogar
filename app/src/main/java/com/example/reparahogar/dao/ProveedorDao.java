@@ -28,10 +28,6 @@ public interface ProveedorDao {
     @Query("SELECT * FROM proveedores WHERE uid = :uid LIMIT 1")
     Proveedor obtenerPorUidSync(String uid);
 
-    /**
-     * Obtiene proveedores por tipo de servicio.
-     * La búsqueda por cercanía se hace en Firestore; aquí guardamos el cache.
-     */
     @Query("SELECT * FROM proveedores WHERE tipoServicio = :tipo")
     LiveData<List<Proveedor>> obtenerPorTipo(String tipo);
 

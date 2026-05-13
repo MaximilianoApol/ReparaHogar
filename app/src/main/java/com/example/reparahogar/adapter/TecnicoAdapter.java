@@ -13,10 +13,6 @@ import com.example.reparahogar.model.Proveedor;
 
 import java.util.List;
 
-/**
- * Adapter para mostrar la lista de técnicos disponibles en FragmentTecnicosDisponibles.
- * Al tocar un ítem se notifica mediante OnTecnicoClickListener.
- */
 public class TecnicoAdapter extends RecyclerView.Adapter<TecnicoAdapter.ViewHolder> {
 
     public interface OnTecnicoClickListener {

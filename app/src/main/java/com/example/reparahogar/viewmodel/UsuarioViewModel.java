@@ -9,10 +9,7 @@ import androidx.lifecycle.LiveData;
 import com.example.reparahogar.model.Usuario;
 import com.example.reparahogar.repository.UsuarioRepository;
 
-/**
- * ViewModel para leer datos del perfil del usuario.
- * Delega al UsuarioRepository que combina Room + Firestore.
- */
+
 public class UsuarioViewModel extends AndroidViewModel {
 
     private final UsuarioRepository usuarioRepository;

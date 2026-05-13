@@ -9,10 +9,7 @@ import androidx.room.Update;
 
 import com.example.reparahogar.model.Usuario;
 
-/**
- * Operaciones de base de datos local para Usuario.
- * OnConflictStrategy.REPLACE: si el usuario ya existe, lo actualiza.
- */
+
 @Dao
 public interface UsuarioDao {
 

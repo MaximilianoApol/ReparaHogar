@@ -26,10 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Muestra el calendario nativo de Android y la lista de servicios actuales del cliente.
- * Al cambiar la fecha seleccionada en el calendario, filtra los servicios de ese día.
- */
+
 public class FragmentCalendario extends Fragment {
 
     private ServicioViewModel servicioViewModel;

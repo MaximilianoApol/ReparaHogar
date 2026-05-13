@@ -10,13 +10,7 @@ import com.example.reparahogar.model.Usuario;
 import com.example.reparahogar.utils.ExecutorUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-/**
- * Fuente única de verdad para Usuario.
- *
- * Estrategia:
- *  - Lectura: Room (LiveData, reactivo). Firestore alimenta Room en background.
- *  - Escritura: primero Firestore, luego Room si tiene éxito.
- */
+
 public class UsuarioRepository {
 
     private static final String COLECCION = "users";

@@ -15,11 +15,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.List;
 
-/**
- * Adapter para la agenda de servicios del proveedor.
- * Usa el modelo Servicio (sustituye a la clase Cita).
- * Toca un ítem vigente → BottomSheet con Confirmar / Finalizar.
- */
+
 public class ProveedorServicioAdapter
         extends RecyclerView.Adapter<ProveedorServicioAdapter.ViewHolder> {
 

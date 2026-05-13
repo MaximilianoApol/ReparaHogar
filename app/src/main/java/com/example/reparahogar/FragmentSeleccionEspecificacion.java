@@ -14,11 +14,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
-/**
- * Pantalla donde el cliente elige la especificación de su problema.
- * Al presionar "Siguiente" navega a FragmentTecnicosDisponibles
- * pasando la categoría y la especificación elegida.
- */
+
 public class FragmentSeleccionEspecificacion extends Fragment {
 
     private String categoriaPadre;

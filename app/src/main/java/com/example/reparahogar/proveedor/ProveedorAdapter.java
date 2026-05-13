@@ -15,13 +15,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.List;
 
-/**
- * Adapter para la agenda del proveedor.
- * Usa el modelo Servicio (colección "servicios" en Firestore).
- * Al tocar un ítem vigente muestra un BottomSheet con opciones:
- *  - Confirmar llegada → CONFIRMADO
- *  - Finalizar servicio → abre fragment_servicio_confirmado2
- */
+
 public class ProveedorAdapter extends RecyclerView.Adapter<ProveedorAdapter.ViewHolder> {
 
     public interface OnServicioClickListener {

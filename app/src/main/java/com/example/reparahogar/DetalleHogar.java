@@ -1,7 +1,7 @@
 package com.example.reparahogar;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
@@ -21,16 +21,12 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * Pantalla principal del cliente.
- * Badge rojo en Notificaciones cuando hay servicios TERMINADOS sin calificar.
- */
 public class DetalleHogar extends AppCompatActivity {
 
     private ServicioViewModel    servicioViewModel;
     private MantenimientoAdapter adapter;
     private BottomNavigationView bottomNav;
+    private View                 fragmentContainer;
     private final List<Servicio> listaServicios = new ArrayList<>();
 
     @Override
@@ -39,9 +35,12 @@ public class DetalleHogar extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_detalle_hogar);
 
+        fragmentContainer = findViewById(R.id.mi_hogar);
+
         servicioViewModel = new ViewModelProvider(
                 this, new ViewModelFactory(getApplication()))
                 .get(ServicioViewModel.class);
+
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> cerrarSesion());
@@ -50,6 +49,7 @@ public class DetalleHogar extends AppCompatActivity {
         if (btnPerfil != null) {
             btnPerfil.setOnClickListener(v -> abrirFragment(new FragmentPerfil()));
         }
+
 
         RecyclerView rv = findViewById(R.id.rvMantenimientos);
         if (rv != null) {
@@ -65,11 +65,13 @@ public class DetalleHogar extends AppCompatActivity {
         findViewById(R.id.chipGas)
                 .setOnClickListener(v -> irASeleccion("Gas"));
 
+
         bottomNav = findViewById(R.id.bottom_navigation);
         if (bottomNav != null) {
             bottomNav.setOnItemSelectedListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.page_1) {
+                    // Limpiar todo el back stack y ocultar el contenedor
                     getSupportFragmentManager().popBackStack(
                             null,
                             androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -78,7 +80,6 @@ public class DetalleHogar extends AppCompatActivity {
                     abrirFragment(new FragmentCalendario());
                     return true;
                 } else if (id == R.id.page_3) {
-                    // Quitar badge al abrir notificaciones
                     BadgeDrawable badge = bottomNav.getBadge(R.id.page_3);
                     if (badge != null) badge.setVisible(false);
                     abrirFragment(new FragmentNotificaciones());
@@ -87,6 +88,17 @@ public class DetalleHogar extends AppCompatActivity {
                 return false;
             });
         }
+
+
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                fragmentContainer.setVisibility(View.GONE);
+                // Restaurar selección del tab Inicio
+                if (bottomNav != null) {
+                    bottomNav.setSelectedItemId(R.id.page_1);
+                }
+            }
+        });
 
         cargarServicios();
     }
@@ -104,14 +116,14 @@ public class DetalleHogar extends AppCompatActivity {
         });
     }
 
-    /** Badge con el número de servicios TERMINADOS que aún no han sido calificados. */
     private void actualizarBadge(List<Servicio> servicios) {
         if (bottomNav == null) return;
         int terminados = 0;
-        if (servicios != null)
-            for (Servicio s : servicios)
+        if (servicios != null) {
+            for (Servicio s : servicios) {
                 if (Servicio.ESTADO_TERMINADO.equals(s.getEstado())) terminados++;
-
+            }
+        }
         BadgeDrawable badge = bottomNav.getOrCreateBadge(R.id.page_3);
         if (terminados > 0) {
             badge.setNumber(terminados);
@@ -147,6 +159,7 @@ public class DetalleHogar extends AppCompatActivity {
     }
 
     private void abrirFragment(androidx.fragment.app.Fragment fragment) {
+        fragmentContainer.setVisibility(View.VISIBLE);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.mi_hogar, fragment)
                 .addToBackStack(null)

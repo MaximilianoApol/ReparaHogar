@@ -26,13 +26,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.util.Calendar;
 import java.util.Locale;
 
-/**
- * Pantalla donde el cliente confirma:
- *  - Dirección del servicio
- *  - Fecha (DatePicker)
- *  - Hora (chips de horario)
- * y presiona "Agendar Servicio".
- */
+
 public class FragmentAgendarServicio extends Fragment {
 
     private ServicioViewModel servicioViewModel;
