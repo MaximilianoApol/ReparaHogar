@@ -1,112 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarVerificacion"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#00468B"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <TextView
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarVerificacion"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#00468B">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Completa tu perfil"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <FrameLayout
+            android:id="@+id/containerSelfie"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Verificación de identidad"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </com.google.android.material.appbar.MaterialToolbar>
+            android:layout_marginTop="24dp"
+            android:visibility="gone">
 
-    <FrameLayout
-        android:id="@+id/containerSelfie"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarVerificacion">
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imgSelfie"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:background="#E8EEF8"
+                android:padding="24dp"
+                android:src="@drawable/ic_user_circle"
+                app:shapeAppearanceOverlay="@style/CircleImage" />
+        </FrameLayout>
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/imgSelfie"
-            android:layout_width="140dp"
-            android:layout_height="140dp"
-            android:background="#E1D5F5"
-            android:padding="40dp"
-            android:src="@drawable/ic_add"
-            app:shapeAppearanceOverlay="@style/CircleImage" />
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:text="Foto de perfil" />
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="bottom|end"
-            android:src="@drawable/ic_check_circle_green" />
-    </FrameLayout>
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Tomar selfie"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@id/containerSelfie"
-        app:layout_constraintStart_toStartOf="@id/containerSelfie"
-        app:layout_constraintTop_toBottomOf="@id/containerSelfie" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutSelectorServicios"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="32dp"
-        android:hint="Tipo de servicio"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbarVerificacion"
-        tools:layout_editor_absoluteX="32dp">
-
-        <AutoCompleteTextView
-            android:id="@+id/spinnerServicios"
+        <!-- Contenido real -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clickable="true"
-            android:cursorVisible="false"
-            android:focusable="false"
-            android:inputType="none" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:orientation="vertical"
+            android:padding="24dp">
 
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/checkPermisoUbicacion"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="32dp"
-        android:layout_marginTop="32dp"
-        android:text="Permitir acceso a mi ubicación en tiempo real para aparecer en las búsquedas de clientes cercanos."
-        android:textColor="#666666"
-        android:textSize="13sp"
-        app:layout_constraintTop_toBottomOf="@id/layoutSelectorServicios" />
+            <!-- Ícono decorativo visible -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="8dp"
+                android:background="#E8EEF8"
+                android:padding="20dp"
+                android:src="@drawable/ic_user_circle"
+                app:shapeAppearanceOverlay="@style/CircleImage" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnEnviarVerificacion"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginHorizontal="32dp"
-        android:layout_marginBottom="40dp"
-        android:backgroundTint="#00468B"
-        android:enabled="false"
-        android:text="Enviar para verificación"
-        android:textAllCaps="false"
-        app:cornerRadius="28dp"
-        app:iconTint="@color/white"
-        app:icon="@drawable/ic_send"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="28dp"
+                android:text="Indica tu especialidad y zona de trabajo"
+                android:textColor="#666666"
+                android:textSize="14sp" />
 
+            <!-- Tipo de servicio -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="¿Qué tipo de servicio ofreces?"
+                android:textColor="#333333"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutSelectorServicios"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="28dp"
+                android:hint="Selecciona una categoría">
+
+                <AutoCompleteTextView
+                    android:id="@+id/spinnerServicios"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Checkbox ubicación -->
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/checkPermisoUbicacion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                android:text="Permitir acceso a mi ubicación para aparecer en búsquedas de clientes cercanos."
+                android:textColor="#555555"
+                android:textSize="14sp" />
+
+            <!-- Botón enviar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEnviarVerificacion"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:backgroundTint="#00468B"
+                android:enabled="false"
+                android:text="Comenzar a trabajar"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:cornerRadius="28dp"
+                app:icon="@drawable/ic_check"
+                app:iconTint="@color/white" />
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

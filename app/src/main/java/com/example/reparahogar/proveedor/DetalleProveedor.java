@@ -2,6 +2,7 @@ package com.example.reparahogar.proveedor;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -11,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.reparahogar.FragmentPerfil;
 import com.example.reparahogar.MainActivity;
 import com.example.reparahogar.R;
 import com.example.reparahogar.FragmentServicioConfirmado;
@@ -49,6 +51,16 @@ public class DetalleProveedor extends AppCompatActivity {
                 this,
                 new ViewModelFactory(getApplication())
         ).get(ServicioViewModel.class);
+
+        ImageButton btnPerfil = findViewById(R.id.btnPerfil);
+        if (btnPerfil != null) {
+            btnPerfil.setOnClickListener(v ->
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_proveedor, new FragmentPerfil())
+                            .addToBackStack(null)
+                            .commit()
+            );
+        }
 
         // ── Toolbar ───────────────────────────────────────────────────────────
         MaterialToolbar toolbar = findViewById(R.id.toolbarProveedor);

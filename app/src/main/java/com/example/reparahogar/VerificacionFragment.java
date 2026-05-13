@@ -1,8 +1,8 @@
 package com.example.reparahogar;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +20,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.reparahogar.model.Proveedor;
+import com.example.reparahogar.model.Usuario;
+import com.example.reparahogar.proveedor.DetalleProveedor;
 import com.example.reparahogar.viewmodel.AuthViewModel;
 import com.example.reparahogar.viewmodel.ProveedorViewModel;
 import com.example.reparahogar.viewmodel.ViewModelFactory;
@@ -27,43 +29,35 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
-import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
- * Pantalla de verificación del proveedor. Permite:
- *  1. Agregar foto de perfil (galería)
- *  2. Seleccionar tipo de servicio (spinner)
- *  3. Autorizar ubicación en tiempo real
- *  4. Enviar para verificación → guarda en Firestore y Room
+ * Pantalla de verificación del proveedor.
+ *
+ * - Sin Firebase Storage (requiere plan de pago).
+ * - El proveedor se marca como verificado=true automáticamente.
+ * - Al enviar con éxito navega directo a DetalleProveedor.
  */
 public class VerificacionFragment extends Fragment {
 
-    private AuthViewModel     authViewModel;
+    private AuthViewModel      authViewModel;
     private ProveedorViewModel proveedorViewModel;
 
-    private MaterialCheckBox   checkUbicacion;
-    private MaterialButton     btnEnviar;
+    private MaterialCheckBox     checkUbicacion;
+    private MaterialButton       btnEnviar;
     private AutoCompleteTextView spinnerServicios;
-    private ShapeableImageView imgSelfie;
 
     private FusedLocationProviderClient fusedLocationClient;
     private double latReal = 0.0, lngReal = 0.0;
-    private Uri    fotoUri  = null;
+
+    private Usuario usuarioCacheado = null;
+    private boolean envioEnProceso  = false;
 
     private static final String[] SERVICIOS = {
             "Agua / Plomería", "Electricidad", "Gas"
     };
 
-    // ── Launchers ─────────────────────────────────────────────────────────────
-
-    private final ActivityResultLauncher<String> pickImageLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
-                    fotoUri = uri;
-                    imgSelfie.setImageURI(uri);
-                }
-            });
+    // ── Permiso de ubicación ──────────────────────────────────────────────────
 
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -73,8 +67,8 @@ public class VerificacionFragment extends Fragment {
                     obtenerUbicacionReal();
                 } else {
                     Toast.makeText(getContext(),
-                            "Permiso de ubicación denegado. No aparecerás en búsquedas cercanas.",
-                            Toast.LENGTH_LONG).show();
+                            "Permiso de ubicación denegado.",
+                            Toast.LENGTH_SHORT).show();
                     checkUbicacion.setChecked(false);
                 }
             });
@@ -94,7 +88,6 @@ public class VerificacionFragment extends Fragment {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        // ViewModels (comparten con MainActivity / AuthViewModel)
         authViewModel = new ViewModelProvider(
                 requireActivity(),
                 new ViewModelFactory(requireActivity().getApplication())
@@ -106,60 +99,64 @@ public class VerificacionFragment extends Fragment {
         ).get(ProveedorViewModel.class);
 
         // Vistas
-        imgSelfie       = view.findViewById(R.id.imgSelfie);
-        spinnerServicios= view.findViewById(R.id.spinnerServicios);
-        checkUbicacion  = view.findViewById(R.id.checkPermisoUbicacion);
-        btnEnviar       = view.findViewById(R.id.btnEnviarVerificacion);
+        spinnerServicios = view.findViewById(R.id.spinnerServicios);
+        checkUbicacion   = view.findViewById(R.id.checkPermisoUbicacion);
+        btnEnviar        = view.findViewById(R.id.btnEnviarVerificacion);
 
-        // Spinner con tipos de servicio
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+        // Ocultar sección de foto (no se usa sin Storage)
+        View containerSelfie = view.findViewById(R.id.containerSelfie);
+        View labelSelfie     = view.findViewById(R.id.textView);
+        if (containerSelfie != null) containerSelfie.setVisibility(View.GONE);
+        if (labelSelfie     != null) labelSelfie.setVisibility(View.GONE);
+
+        // Spinner
+        spinnerServicios.setAdapter(new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
-                SERVICIOS);
-        spinnerServicios.setAdapter(spinnerAdapter);
+                SERVICIOS));
 
-        // El botón de envío requiere que el checkbox esté marcado
+        // Checkbox habilita el botón y solicita permiso de ubicación
         btnEnviar.setEnabled(false);
         checkUbicacion.setOnCheckedChangeListener((btn, checked) -> {
-            if (checked) {
-                solicitarPermisosUbicacion();
-            } else {
-                latReal = 0.0;
-                lngReal = 0.0;
-            }
-            btnEnviar.setEnabled(checked);
+            if (checked) solicitarPermisosUbicacion();
+            else { latReal = 0.0; lngReal = 0.0; }
+            actualizarBoton();
         });
 
-        // Tap en foto → abrir galería
-        imgSelfie.setOnClickListener(v ->
-                pickImageLauncher.launch("image/*"));
-
-        // Botón enviar
         btnEnviar.setOnClickListener(v -> enviarVerificacion());
 
-        // Observar errores / carga
-        proveedorViewModel.getCargando().observe(getViewLifecycleOwner(), cargando -> {
-            btnEnviar.setEnabled(!cargando && checkUbicacion.isChecked());
-            btnEnviar.setText(cargando ? "Enviando..." : "Enviar para verificación");
+        // ── Observers (registrados una sola vez) ──────────────────────────────
+
+        // Cachear usuario para no abrir observer nuevo en cada tap
+        authViewModel.getUsuarioActual().observe(getViewLifecycleOwner(), usuario -> {
+            if (usuario != null) usuarioCacheado = usuario;
         });
 
+        // Éxito → ir directo a DetalleProveedor
         proveedorViewModel.getOperacionOk().observe(getViewLifecycleOwner(), ok -> {
-            if (Boolean.TRUE.equals(ok)) {
-                Toast.makeText(getContext(),
-                        "Perfil enviado. Pronto será verificado.", Toast.LENGTH_LONG).show();
+            if (Boolean.TRUE.equals(ok) && envioEnProceso) {
+                envioEnProceso = false;
                 proveedorViewModel.limpiarOperacionOk();
-                // Navegar a DetalleProveedor cuando el admin verifique;
-                // por ahora regresamos al login limpio
-                authViewModel.cerrarSesion();
+                irADetalleProveedor();
             }
         });
 
+        // Error
         proveedorViewModel.getErrorMensaje().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
+                envioEnProceso = false;
                 Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
                 proveedorViewModel.limpiarError();
+                actualizarBoton();
             }
         });
+    }
+
+    // ── UI ────────────────────────────────────────────────────────────────────
+
+    private void actualizarBoton() {
+        btnEnviar.setEnabled(checkUbicacion.isChecked() && !envioEnProceso);
+        if (!envioEnProceso) btnEnviar.setText("Enviar para verificación");
     }
 
     // ── Ubicación ─────────────────────────────────────────────────────────────
@@ -183,8 +180,8 @@ public class VerificacionFragment extends Fragment {
                     if (location != null) {
                         latReal = location.getLatitude();
                         lngReal = location.getLongitude();
-                        Toast.makeText(getContext(),
-                                "Ubicación detectada ✓", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Ubicación detectada ✓",
+                                Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getContext(),
                                 "No se pudo obtener ubicación; activa el GPS.",
@@ -193,20 +190,27 @@ public class VerificacionFragment extends Fragment {
                 });
     }
 
-    // ── Envío ──────────────────────────────────────────────────────────────────
+    // ── Envío ─────────────────────────────────────────────────────────────────
 
     private void enviarVerificacion() {
+        if (envioEnProceso) return;
+
         String tipoServicioUI = spinnerServicios.getText().toString().trim();
         if (tipoServicioUI.isEmpty()) {
-            Toast.makeText(getContext(), "Selecciona un tipo de servicio", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Selecciona un tipo de servicio",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (fotoUri == null) {
-            Toast.makeText(getContext(), "Agrega una foto de perfil", Toast.LENGTH_SHORT).show();
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : "";
+        if (uid.isEmpty()) {
+            Toast.makeText(getContext(), "Sesión expirada, inicia sesión de nuevo",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Convertir categoría
         String tipoModelo;
         switch (tipoServicioUI) {
             case "Agua / Plomería": tipoModelo = "PLOMERIA";     break;
@@ -215,50 +219,39 @@ public class VerificacionFragment extends Fragment {
             default:                tipoModelo = tipoServicioUI.toUpperCase();
         }
 
-        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : "";
-        if (uid.isEmpty()) {
-            Toast.makeText(getContext(), "Sesión expirada", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+        // Construir perfil — verificado=true para que pueda operar de inmediato
         Proveedor perfil = new Proveedor();
         perfil.setUid(uid);
         perfil.setTipoServicio(tipoModelo);
         perfil.setLatitud(latReal);
         perfil.setLongitud(lngReal);
-        perfil.setVerificado(false);
+        perfil.setVerificado(true);   // ← automático, sin revisión manual
 
-        authViewModel.getUsuarioActual().observe(getViewLifecycleOwner(), usuario -> {
-            if (usuario != null) {
-                perfil.setNombre(usuario.getNombre());
-                perfil.setTelefono(usuario.getTelefono());
-                perfil.setCorreo(usuario.getCorreo());
-            }
+        if (usuarioCacheado != null) {
+            perfil.setNombre(usuarioCacheado.getNombre());
+            perfil.setTelefono(usuarioCacheado.getTelefono());
+            perfil.setCorreo(usuarioCacheado.getCorreo());
+        }
 
-            // ── Subir foto a Firebase Storage ──
-            com.google.firebase.storage.StorageReference ref =
-                    com.google.firebase.storage.FirebaseStorage.getInstance()
-                            .getReference()
-                            .child("fotos_proveedores/" + uid + ".jpg");
+        // También marcar el Usuario como verificado en Firestore
+        if (usuarioCacheado != null) {
+            usuarioCacheado.setVerificado(true);
+            new com.example.reparahogar.repository.UsuarioRepository(requireContext())
+                    .actualizar(usuarioCacheado, null);
+        }
 
-            btnEnviar.setEnabled(false);
-            btnEnviar.setText("Subiendo foto...");
+        envioEnProceso = true;
+        btnEnviar.setEnabled(false);
+        btnEnviar.setText("Guardando...");
 
-            ref.putFile(fotoUri)
-                    .addOnSuccessListener(task ->
-                            ref.getDownloadUrl().addOnSuccessListener(url -> {
-                                perfil.setFotoUrl(url.toString());
-                                proveedorViewModel.guardarPerfil(perfil);
-                            })
-                    )
-                    .addOnFailureListener(e -> {
-                        // Falla la foto → guardar sin foto, no bloqueamos
-                        Toast.makeText(getContext(),
-                                "No se pudo subir la foto, continuando sin imagen.",
-                                Toast.LENGTH_SHORT).show();
-                        proveedorViewModel.guardarPerfil(perfil);
-                    });
-        });
+        proveedorViewModel.guardarPerfil(perfil);
+    }
+
+    // ── Navegación ────────────────────────────────────────────────────────────
+
+    private void irADetalleProveedor() {
+        Intent intent = new Intent(requireActivity(), DetalleProveedor.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 }
