@@ -34,7 +34,6 @@ public class AuthViewModel extends AndroidViewModel {
         proveedorRepository = new ProveedorRepository(application);
     }
 
-    // ── Login ─────────────────────────────────────────────────────────────────
 
     public void login(String correo, String password) {
         if (!validarLogin(correo, password)) return;
@@ -74,7 +73,6 @@ public class AuthViewModel extends AndroidViewModel {
         });
     }
 
-    // ── Registro ──────────────────────────────────────────────────────────────
 
     public void registrar(String nombre, String correo, String telefono,
                           String password, boolean esProveedor) {
@@ -138,7 +136,6 @@ public class AuthViewModel extends AndroidViewModel {
         });
     }
 
-    // ── Sesión activa ─────────────────────────────────────────────────────────
 
     public void verificarSesionActiva() {
         FirebaseUser firebaseUser = auth.getCurrentUser();
@@ -154,16 +151,9 @@ public class AuthViewModel extends AndroidViewModel {
         return auth.getCurrentUser();
     }
 
-    /**
-     * ★ FIX: resetea todos los LiveData de navegación al cerrar sesión
-     * para que al crear una cuenta nueva, RegistroFragment pueda
-     * navegar sin disparar observers "sucios" de la sesión anterior.
-     */
     public void cerrarSesion() {
         auth.signOut();
         usuarioActual.setValue(null);
-        // Resetear flags de navegación — evita que el RegistroFragment
-        // reciba un true "viejo" y navegue automáticamente antes de time.
         navegarCliente.setValue(null);
         navegarProveedor.setValue(null);
         navegarVerificacion.setValue(null);
@@ -171,7 +161,6 @@ public class AuthViewModel extends AndroidViewModel {
         cargando.setValue(false);
     }
 
-    // ── Validaciones ──────────────────────────────────────────────────────────
 
     private boolean validarLogin(String correo, String password) {
         if (correo == null || correo.trim().isEmpty()) {
@@ -212,8 +201,6 @@ public class AuthViewModel extends AndroidViewModel {
         if (msg.contains("badly formatted")) return "Formato de correo inválido";
         return "Error: " + msg;
     }
-
-    // ── Getters ───────────────────────────────────────────────────────────────
 
     public LiveData<Boolean> getCargando()            { return cargando; }
     public LiveData<String>  getErrorMensaje()        { return errorMensaje; }

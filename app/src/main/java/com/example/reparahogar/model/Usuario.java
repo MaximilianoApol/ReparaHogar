@@ -4,28 +4,23 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.annotation.NonNull;
 
-/**
- * Representa a un usuario registrado.
- * Puede ser CLIENTE o PROVEEDOR (campo tipoUsuario).
- * Se almacena localmente en Room y se sincroniza con Firestore (colección "users").
- */
+
 @Entity(tableName = "usuarios")
 public class Usuario {
 
     @PrimaryKey
     @NonNull
-    private String uid;          // UID de Firebase Auth (mismo en Firestore)
+    private String uid;
 
     private String nombre;
     private String correo;
     private String telefono;
-    private String fotoUrl;      // URL en Firebase Storage (puede ser null)
-    private String tipoUsuario;  // "CLIENTE" o "PROVEEDOR"
+    private String fotoUrl;
+    private String tipoUsuario;
     private boolean verificado;
     private double latitud;
-    private double longitud;// Solo relevante para PROVEEDOR
+    private double longitud;
 
-    // ── Constructor vacío requerido por Room ──
     public Usuario() {}
 
     public Usuario(@NonNull String uid, String nombre, String correo,
@@ -38,7 +33,6 @@ public class Usuario {
         this.verificado = false;
     }
 
-    // ── Getters y Setters ──
 
     @NonNull
     public String getUid() { return uid; }

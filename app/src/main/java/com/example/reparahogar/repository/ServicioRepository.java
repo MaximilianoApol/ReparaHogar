@@ -13,12 +13,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.List;
 
-/**
- * Fuente única de verdad para Servicio.
- *
- * Usa un listener en tiempo real de Firestore para mantener Room
- * actualizado automáticamente (ej: cuando el proveedor cambia el estado).
- */
+
 public class ServicioRepository {
 
     private static final String COLECCION = "servicios";
@@ -36,13 +31,6 @@ public class ServicioRepository {
         this.firestore   = FirebaseFirestore.getInstance();
     }
 
-    // ── Lectura — Cliente ─────────────────────────────────────────────────────
-
-    /**
-     * Inicia un listener en tiempo real para los servicios del cliente.
-     * Cuando Firestore recibe un cambio (ej: proveedor marca "TERMINADO"),
-     * actualiza Room y el LiveData notifica a la UI automáticamente.
-     */
     public LiveData<List<Servicio>> obtenerServiciosCliente(String clienteUid) {
         iniciarListenerCliente(clienteUid);
         return servicioDao.obtenerPorCliente(clienteUid);
@@ -62,8 +50,6 @@ public class ServicioRepository {
                             servicioDao.insertarLista(servicios));
                 });
     }
-
-    // ── Lectura — Proveedor ───────────────────────────────────────────────────
 
     public LiveData<List<Servicio>> obtenerServiciosProveedor(String proveedorUid) {
         iniciarListenerProveedor(proveedorUid);
@@ -88,12 +74,7 @@ public class ServicioRepository {
                 });
     }
 
-    // ── Escritura ─────────────────────────────────────────────────────────────
 
-    /**
-     * El cliente agenda un nuevo servicio.
-     * Genera el ID en Firestore antes de guardar para tenerlo disponible en Room.
-     */
     public void agendar(Servicio servicio, OnResultListener listener) {
         // Generamos el ID desde Firestore para que sea el mismo en Room
         String nuevoId = firestore.collection(COLECCION).document().getId();
@@ -112,9 +93,6 @@ public class ServicioRepository {
                 });
     }
 
-    /**
-     * El proveedor cambia el estado del servicio (CONFIRMADO o TERMINADO).
-     */
     public void cambiarEstado(String servicioId, String nuevoEstado,
                               OnResultListener listener) {
         firestore.collection(COLECCION)
@@ -130,18 +108,10 @@ public class ServicioRepository {
                 });
     }
 
-    // ── Limpieza de listeners ─────────────────────────────────────────────────
-
-    /**
-     * Llamar desde onDestroy() del Fragment/Activity o desde el ViewModel
-     * cuando ya no se necesitan actualizaciones en tiempo real.
-     */
     public void detenerListeners() {
         if (listenerCliente   != null) listenerCliente.remove();
         if (listenerProveedor != null) listenerProveedor.remove();
     }
-
-    // ── Callback ──────────────────────────────────────────────────────────────
 
     public interface OnResultListener {
         void onSuccess();

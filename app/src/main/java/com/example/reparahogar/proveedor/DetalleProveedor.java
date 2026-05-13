@@ -2,6 +2,7 @@ package com.example.reparahogar.proveedor;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,49 +27,49 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Pantalla principal del proveedor.
- *
- * Muestra:
- *  1. Contador de servicios PENDIENTES de hoy
- *  2. RecyclerView con todos sus servicios
- *  3. Al tocar un servicio vigente → BottomSheet (Confirmar / Finalizar)
- */
+
 public class DetalleProveedor extends AppCompatActivity {
 
     private ServicioViewModel servicioViewModel;
     private ProveedorServicioAdapter adapter;
     private final List<Servicio> listaServicios = new ArrayList<>();
     private TextView tvCantidadServicios;
-    ImageButton btnPerfil = findViewById(R.id.btnPerfil);
+    private ImageButton btnPerfil;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        btnPerfil = findViewById(R.id.btnPerfil);
         setContentView(R.layout.activity_detalle_proveedor);
 
-        // ── ViewModels ────────────────────────────────────────────────────────
         servicioViewModel = new ViewModelProvider(
                 this,
                 new ViewModelFactory(getApplication())
         ).get(ServicioViewModel.class);
 
-        // ── Toolbar ───────────────────────────────────────────────────────────
+
         MaterialToolbar toolbar = findViewById(R.id.toolbarProveedor);
         toolbar.setNavigationOnClickListener(v -> cerrarSesion());
 
-        btnPerfil.setOnClickListener(v -> {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.contenedorFragments, new FragmentPerfilProveedor())
-                    .addToBackStack(null)
-                    .commit();
-        });
-        // ── Contador pendientes ───────────────────────────────────────────────
+
+        ImageButton btnPerfil = toolbar.findViewById(R.id.btnPerfil);
+        if (btnPerfil != null) {
+            btnPerfil.setOnClickListener(v -> {
+                findViewById(R.id.contenedorFragments).setVisibility(View.VISIBLE);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.contenedorFragments, new FragmentPerfilProveedor())
+                        .addToBackStack(null)
+                        .commit();
+            });
+        }
+
         tvCantidadServicios = findViewById(R.id.tvCantidadServicios);
 
-        // ── RecyclerView ──────────────────────────────────────────────────────
+
         RecyclerView rvAgenda = findViewById(R.id.rvAgendaProveedor);
         rvAgenda.setLayoutManager(new LinearLayoutManager(this));
 
@@ -89,7 +90,7 @@ public class DetalleProveedor extends AppCompatActivity {
 
         rvAgenda.setAdapter(adapter);
 
-        // ── Observar datos ────────────────────────────────────────────────────
+
         String uid = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid() : "";
 
@@ -115,9 +116,15 @@ public class DetalleProveedor extends AppCompatActivity {
                 servicioViewModel.limpiarError();
             }
         });
+
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                findViewById(R.id.contenedorFragments).setVisibility(View.GONE);
+            }
+        });
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+
 
     private void cerrarSesion() {
         FirebaseAuth.getInstance().signOut();
@@ -134,6 +141,9 @@ public class DetalleProveedor extends AppCompatActivity {
         args.putString("categoria", servicio.getCategoria());
         args.putString("fecha",     servicio.getFecha());
         fragment.setArguments(args);
+
+        // Mostrar el contenedor antes de cargar el fragment
+        findViewById(R.id.contenedorFragments).setVisibility(View.VISIBLE);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.contenedorFragments, fragment)

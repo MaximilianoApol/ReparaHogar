@@ -4,43 +4,33 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.annotation.NonNull;
 
-/**
- * Representa un servicio de mantenimiento solicitado.
- * Firestore: colección "servicios".
- *
- * Estados posibles: "PENDIENTE" → "CONFIRMADO" → "TERMINADO"
- */
+
 @Entity(tableName = "servicios")
 public class Servicio {
 
-    // Estados (constantes para evitar strings sueltos en el código)
     public static final String ESTADO_PENDIENTE   = "PENDIENTE";
     public static final String ESTADO_CONFIRMADO  = "CONFIRMADO";
     public static final String ESTADO_TERMINADO   = "TERMINADO";
-
-    // Categorías
     public static final String CAT_PLOMERIA      = "PLOMERIA";
     public static final String CAT_ELECTRICIDAD  = "ELECTRICIDAD";
     public static final String CAT_GAS           = "GAS";
 
     @PrimaryKey
     @NonNull
-    private String id;            // ID generado por Firestore (push ID)
+    private String id;
+    private String clienteUid;
+    private String proveedorUid;
 
-    private String clienteUid;    // UID del cliente que solicita
-    private String proveedorUid;  // UID del proveedor asignado
+    private String categoria;
+    private String detalle;
+    private String estado;
+    private String direccion;
+    private String fecha;
+    private String hora;
 
-    private String categoria;     // CAT_PLOMERIA / CAT_ELECTRICIDAD / CAT_GAS
-    private String detalle;       // Descripción específica del problema
-    private String estado;        // PENDIENTE / CONFIRMADO / TERMINADO
+    private long timestampCreacion;
 
-    private String direccion;     // Dirección donde se realizará el servicio
-    private String fecha;         // Formato: "2024-06-15"
-    private String hora;          // Formato: "10:00"
 
-    private long timestampCreacion; // Epoch ms — para ordenar la lista
-
-    // ── Constructor vacío requerido por Room ──
     public Servicio() {}
 
     public Servicio(@NonNull String id, String clienteUid, String proveedorUid,
@@ -57,8 +47,6 @@ public class Servicio {
         this.estado = ESTADO_PENDIENTE;
         this.timestampCreacion = System.currentTimeMillis();
     }
-
-    // ── Getters y Setters ──
 
     @NonNull
     public String getId() { return id; }

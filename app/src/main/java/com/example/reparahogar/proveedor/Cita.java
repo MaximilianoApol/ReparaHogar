@@ -1,11 +1,6 @@
 package com.example.reparahogar.proveedor;
 
-/**
- * Clase de compatibilidad.
- * El flujo nuevo usa com.example.reparahogar.model.Servicio.
- * Esta clase mantiene el compilador contento con el código antiguo de DetalleProveedor.
- * Reemplazar gradualmente por Servicio.
- */
+
 public class Cita {
 
     private String idCita;

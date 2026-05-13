@@ -15,13 +15,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
-/**
- * Escucha cambios de conectividad.
- * Cuando el dispositivo recupera la red, sube a Firestore los servicios
- * que fueron guardados solo en Room (modo offline).
- *
- * Uso: llamar SyncManager.iniciar(context) desde Application o MainActivity.
- */
 public class SyncManager {
 
     private static SyncManager instancia;
@@ -61,15 +54,7 @@ public class SyncManager {
                 });
     }
 
-    /**
-     * Busca en Room servicios en estado PENDIENTE que no estén en Firestore
-     * y los sube. Firestore usa set() con el mismo ID, así que es idempotente
-     * (si ya existe, lo sobreescribe sin duplicar).
-     *
-     * Nota: en esta versión sincronizamos todos los PENDIENTE del usuario actual.
-     * Si tu app crece, agrega un campo "sincronizado: boolean" en la entidad
-     * para solo subir los que realmente son nuevos.
-     */
+
     private void sincronizarServiciosPendientes() {
 
         ExecutorUtils.getExecutor().execute(() -> {
@@ -100,6 +85,6 @@ public class SyncManager {
         firestore.collection("servicios")
                 .document(servicio.getId())
                 .set(servicio);
-        // No necesitamos callback: si falla, el próximo reconnect lo reintenta
+
     }
 }

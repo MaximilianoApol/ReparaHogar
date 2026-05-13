@@ -4,26 +4,21 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.annotation.NonNull;
 
-/**
- * Calificación que el cliente da al proveedor al terminar un servicio.
- * Firestore: colección "calificaciones".
- * Rango de puntuación: 1 – 5.
- */
+
 @Entity(tableName = "calificaciones")
 public class Calificacion {
 
     @PrimaryKey
     @NonNull
-    private String id;           // ID generado por Firestore
+    private String id;
 
-    private String servicioId;   // Referencia al servicio calificado
-    private String proveedorUid; // A quién se califica
-    private String clienteUid;   // Quién califica
+    private String servicioId;
+    private String proveedorUid;
+    private String clienteUid;
+    private int puntuacion;
+    private long timestamp;
 
-    private int puntuacion;      // 1 – 5
-    private long timestamp;      // Epoch ms
 
-    // ── Constructor vacío requerido por Room ──
     public Calificacion() {}
 
     public Calificacion(@NonNull String id, String servicioId,
@@ -36,7 +31,6 @@ public class Calificacion {
         this.timestamp = System.currentTimeMillis();
     }
 
-    // ── Getters y Setters ──
 
     @NonNull
     public String getId() { return id; }

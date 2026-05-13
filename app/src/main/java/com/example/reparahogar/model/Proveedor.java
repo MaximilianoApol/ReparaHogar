@@ -4,17 +4,13 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.annotation.NonNull;
 
-/**
- * Datos extendidos del proveedor de servicio.
- * El uid coincide con el uid del Usuario para relacionarlos.
- * Firestore: colección "proveedores".
- */
+
 @Entity(tableName = "proveedores")
 public class Proveedor {
 
     @PrimaryKey
     @NonNull
-    private String uid;              // Mismo UID que Usuario
+    private String uid;
 
     private String nombre;
     private String descripcion;
@@ -22,18 +18,16 @@ public class Proveedor {
     private String correo;
     private String fotoUrl;
 
-    // Tipo de servicio: "PLOMERIA", "ELECTRICIDAD" o "GAS"
+
     private String tipoServicio;
 
-    private float calificacionPromedio; // 0.0 – 5.0
+    private float calificacionPromedio;
     private int totalServicios;
-    private boolean verificado;         // Contador de servicios realizados
+    private boolean verificado;
 
-    // Ubicación (se actualiza en tiempo real cuando el proveedor está activo)
     private double latitud;
     private double longitud;
 
-    // ── Constructor vacío requerido por Room ──
     public Proveedor() {}
 
     public Proveedor(@NonNull String uid, String nombre, String descripcion,
@@ -50,7 +44,6 @@ public class Proveedor {
 
     }
 
-    // ── Getters y Setters ──
 
     @NonNull
     public String getUid() { return uid; }
