@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.reparahogar.FragmentPerfil;
+import com.example.reparahogar.FragmentPerfilProveedor;
 import com.example.reparahogar.MainActivity;
 import com.example.reparahogar.R;
 import com.example.reparahogar.FragmentServicioConfirmado;
@@ -39,6 +40,7 @@ public class DetalleProveedor extends AppCompatActivity {
     private ProveedorServicioAdapter adapter;
     private final List<Servicio> listaServicios = new ArrayList<>();
     private TextView tvCantidadServicios;
+    ImageButton btnPerfil = findViewById(R.id.btnPerfil);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,20 +54,17 @@ public class DetalleProveedor extends AppCompatActivity {
                 new ViewModelFactory(getApplication())
         ).get(ServicioViewModel.class);
 
-        ImageButton btnPerfil = findViewById(R.id.btnPerfil);
-        if (btnPerfil != null) {
-            btnPerfil.setOnClickListener(v ->
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.main_proveedor, new FragmentPerfil())
-                            .addToBackStack(null)
-                            .commit()
-            );
-        }
-
         // ── Toolbar ───────────────────────────────────────────────────────────
         MaterialToolbar toolbar = findViewById(R.id.toolbarProveedor);
         toolbar.setNavigationOnClickListener(v -> cerrarSesion());
 
+        btnPerfil.setOnClickListener(v -> {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.contenedorFragments, new FragmentPerfilProveedor())
+                    .addToBackStack(null)
+                    .commit();
+        });
         // ── Contador pendientes ───────────────────────────────────────────────
         tvCantidadServicios = findViewById(R.id.tvCantidadServicios);
 
@@ -137,8 +136,9 @@ public class DetalleProveedor extends AppCompatActivity {
         fragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_proveedor, fragment)
+                .replace(R.id.contenedorFragments, fragment)
                 .addToBackStack(null)
                 .commit();
     }
+
 }

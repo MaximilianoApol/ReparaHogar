@@ -71,26 +71,28 @@ public class SyncManager {
      * para solo subir los que realmente son nuevos.
      */
     private void sincronizarServiciosPendientes() {
+
         ExecutorUtils.getExecutor().execute(() -> {
-            // getCurrentUser() puede ser null si no hay sesión activa
+
             com.google.firebase.auth.FirebaseUser user =
-                    com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+                    com.google.firebase.auth.FirebaseAuth
+                            .getInstance()
+                            .getCurrentUser();
+
             if (user == null) return;
 
-            // Obtenemos todos los servicios pendientes del cliente de forma síncrona
-            // (esto corre en background, es seguro)
-            // Para simplificar usamos una consulta directa a Room sin LiveData
-            AppDatabase.getInstance(context)
+            List<Servicio> servicios = AppDatabase.getInstance(context)
                     .servicioDao()
-                    .obtenerPorCliente(user.getUid())
-                    .observeForever(servicios -> {
-                        if (servicios == null) return;
-                        for (Servicio s : servicios) {
-                            if (Servicio.ESTADO_PENDIENTE.equals(s.getEstado())) {
-                                subirServicio(s);
-                            }
-                        }
-                    });
+                    .obtenerPorClienteSync(user.getUid());
+
+            if (servicios == null) return;
+
+            for (Servicio s : servicios) {
+
+                if (Servicio.ESTADO_PENDIENTE.equals(s.getEstado())) {
+                    subirServicio(s);
+                }
+            }
         });
     }
 

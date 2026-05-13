@@ -14,27 +14,18 @@ import com.example.reparahogar.repository.UsuarioRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-/**
- * Maneja registro, login, sesión activa y cierre de sesión.
- *
- * Navegación según tipo de usuario:
- *   CLIENTE   → DetalleHogar
- *   PROVEEDOR verificado   → DetalleProveedor
- *   PROVEEDOR no verificado → VerificacionFragment
- */
 public class AuthViewModel extends AndroidViewModel {
 
     private final FirebaseAuth        auth;
     private final UsuarioRepository   usuarioRepository;
     private final ProveedorRepository proveedorRepository;
 
-    // ── Estados que observa la UI ─────────────────────────────────────────────
-    private final MutableLiveData<Boolean> cargando             = new MutableLiveData<>(false);
-    private final MutableLiveData<String>  errorMensaje         = new MutableLiveData<>();
-    private final MutableLiveData<Usuario> usuarioActual        = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> navegarCliente       = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> navegarProveedor     = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> navegarVerificacion  = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> cargando            = new MutableLiveData<>(false);
+    private final MutableLiveData<String>  errorMensaje        = new MutableLiveData<>();
+    private final MutableLiveData<Usuario> usuarioActual       = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> navegarCliente      = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> navegarProveedor    = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> navegarVerificacion = new MutableLiveData<>();
 
     public AuthViewModel(@NonNull Application application) {
         super(application);
@@ -47,18 +38,17 @@ public class AuthViewModel extends AndroidViewModel {
 
     public void login(String correo, String password) {
         if (!validarLogin(correo, password)) return;
-
         cargando.setValue(true);
 
         auth.signInWithEmailAndPassword(correo.trim(), password)
                 .addOnSuccessListener(result -> {
-                    FirebaseUser firebaseUser = result.getUser();
-                    if (firebaseUser == null) {
+                    FirebaseUser user = result.getUser();
+                    if (user == null) {
                         cargando.setValue(false);
                         errorMensaje.setValue("Error al iniciar sesión");
                         return;
                     }
-                    consultarTipoYNavegar(firebaseUser.getUid());
+                    consultarTipoYNavegar(user.getUid());
                 })
                 .addOnFailureListener(e -> {
                     cargando.setValue(false);
@@ -66,10 +56,6 @@ public class AuthViewModel extends AndroidViewModel {
                 });
     }
 
-    /**
-     * Consulta Room (que se alimenta de Firestore) para obtener el tipo
-     * de usuario y emite el LiveData de navegación correcto.
-     */
     private void consultarTipoYNavegar(String uid) {
         usuarioRepository.obtenerUsuario(uid).observeForever(usuario -> {
             cargando.setValue(false);
@@ -80,11 +66,8 @@ public class AuthViewModel extends AndroidViewModel {
             usuarioActual.setValue(usuario);
 
             if ("PROVEEDOR".equals(usuario.getTipoUsuario())) {
-                if (usuario.isVerificado()) {
-                    navegarProveedor.setValue(true);
-                } else {
-                    navegarVerificacion.setValue(true);
-                }
+                if (usuario.isVerificado()) navegarProveedor.setValue(true);
+                else                        navegarVerificacion.setValue(true);
             } else {
                 navegarCliente.setValue(true);
             }
@@ -93,18 +76,9 @@ public class AuthViewModel extends AndroidViewModel {
 
     // ── Registro ──────────────────────────────────────────────────────────────
 
-    /**
-     * Crea cuenta en Firebase Auth, guarda Usuario en Firestore + Room.
-     * Si es PROVEEDOR, crea también el documento base en "proveedores".
-     *
-     * @param esProveedor true = marcó "Soy proveedor de servicio" (chkProvider)
-     *                    false = marcó "Soy dueño de casa" (chkOwner)
-     */
     public void registrar(String nombre, String correo, String telefono,
                           String password, boolean esProveedor) {
-
         if (!validarRegistro(nombre, correo, telefono, password)) return;
-
         cargando.setValue(true);
 
         String tipoUsuario = esProveedor ? "PROVEEDOR" : "CLIENTE";
@@ -120,27 +94,20 @@ public class AuthViewModel extends AndroidViewModel {
 
                     Usuario nuevoUsuario = new Usuario(
                             firebaseUser.getUid(),
-                            nombre.trim(),
-                            correo.trim(),
-                            telefono.trim(),
-                            tipoUsuario
-                    );
+                            nombre.trim(), correo.trim(),
+                            telefono.trim(), tipoUsuario);
 
                     usuarioRepository.guardar(nuevoUsuario,
                             new UsuarioRepository.OnResultListener() {
-                                @Override
-                                public void onSuccess() {
+                                @Override public void onSuccess() {
                                     usuarioActual.setValue(nuevoUsuario);
-                                    if (esProveedor) {
-                                        crearPerfilProveedorBase(nuevoUsuario);
-                                    } else {
+                                    if (esProveedor) crearPerfilProveedorBase(nuevoUsuario);
+                                    else {
                                         cargando.setValue(false);
                                         navegarCliente.setValue(true);
                                     }
                                 }
-
-                                @Override
-                                public void onError(String mensaje) {
+                                @Override public void onError(String mensaje) {
                                     cargando.setValue(false);
                                     errorMensaje.setValue(mensaje);
                                 }
@@ -152,32 +119,19 @@ public class AuthViewModel extends AndroidViewModel {
                 });
     }
 
-    /**
-     * Crea el documento base del proveedor en Firestore.
-     * tipoServicio y descripcion los completa en VerificacionFragment.
-     */
     private void crearPerfilProveedorBase(Usuario usuario) {
         Proveedor perfilBase = new Proveedor(
-                usuario.getUid(),
-                usuario.getNombre(),
-                "",
-                usuario.getTelefono(),
-                usuario.getCorreo(),
-                ""
-        );
+                usuario.getUid(), usuario.getNombre(), "",
+                usuario.getTelefono(), usuario.getCorreo(), "");
         perfilBase.setVerificado(false);
         perfilBase.setCalificacionPromedio(0f);
 
         proveedorRepository.guardar(perfilBase, new ProveedorRepository.OnResultListener() {
-            @Override
-            public void onSuccess() {
+            @Override public void onSuccess() {
                 cargando.setValue(false);
                 navegarVerificacion.setValue(true);
             }
-
-            @Override
-            public void onError(String mensaje) {
-                // Usuario guardado aunque falle el perfil — no bloqueamos
+            @Override public void onError(String mensaje) {
                 cargando.setValue(false);
                 navegarVerificacion.setValue(true);
             }
@@ -186,10 +140,6 @@ public class AuthViewModel extends AndroidViewModel {
 
     // ── Sesión activa ─────────────────────────────────────────────────────────
 
-    /**
-     * Llamar desde MainActivity.onCreate().
-     * Si hay sesión activa navega directo, si no, la UI carga LoginFragment.
-     */
     public void verificarSesionActiva() {
         FirebaseUser firebaseUser = auth.getCurrentUser();
         if (firebaseUser == null) return;
@@ -204,25 +154,34 @@ public class AuthViewModel extends AndroidViewModel {
         return auth.getCurrentUser();
     }
 
+    /**
+     * ★ FIX: resetea todos los LiveData de navegación al cerrar sesión
+     * para que al crear una cuenta nueva, RegistroFragment pueda
+     * navegar sin disparar observers "sucios" de la sesión anterior.
+     */
     public void cerrarSesion() {
         auth.signOut();
         usuarioActual.setValue(null);
+        // Resetear flags de navegación — evita que el RegistroFragment
+        // reciba un true "viejo" y navegue automáticamente antes de time.
+        navegarCliente.setValue(null);
+        navegarProveedor.setValue(null);
+        navegarVerificacion.setValue(null);
+        errorMensaje.setValue(null);
+        cargando.setValue(false);
     }
 
     // ── Validaciones ──────────────────────────────────────────────────────────
 
     private boolean validarLogin(String correo, String password) {
         if (correo == null || correo.trim().isEmpty()) {
-            errorMensaje.setValue("Ingresa tu correo electrónico");
-            return false;
+            errorMensaje.setValue("Ingresa tu correo electrónico"); return false;
         }
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correo.trim()).matches()) {
-            errorMensaje.setValue("Correo electrónico no válido");
-            return false;
+            errorMensaje.setValue("Correo electrónico no válido"); return false;
         }
         if (password == null || password.isEmpty()) {
-            errorMensaje.setValue("Ingresa tu contraseña");
-            return false;
+            errorMensaje.setValue("Ingresa tu contraseña"); return false;
         }
         return true;
     }
@@ -230,39 +189,31 @@ public class AuthViewModel extends AndroidViewModel {
     private boolean validarRegistro(String nombre, String correo,
                                     String telefono, String password) {
         if (nombre == null || nombre.trim().isEmpty()) {
-            errorMensaje.setValue("Ingresa tu nombre");
-            return false;
+            errorMensaje.setValue("Ingresa tu nombre"); return false;
         }
         if (correo == null || !android.util.Patterns.EMAIL_ADDRESS
                 .matcher(correo.trim()).matches()) {
-            errorMensaje.setValue("Correo electrónico no válido");
-            return false;
+            errorMensaje.setValue("Correo electrónico no válido"); return false;
         }
         if (telefono == null || telefono.trim().length() < 10) {
-            errorMensaje.setValue("Ingresa un teléfono válido (10 dígitos)");
-            return false;
+            errorMensaje.setValue("Ingresa un teléfono válido (10 dígitos)"); return false;
         }
         if (password == null || password.length() < 6) {
-            errorMensaje.setValue("La contraseña debe tener al menos 6 caracteres");
-            return false;
+            errorMensaje.setValue("La contraseña debe tener al menos 6 caracteres"); return false;
         }
         return true;
     }
 
     private String traducirError(String msg) {
         if (msg == null) return "Error desconocido";
-        if (msg.contains("email address is already in use"))
-            return "Este correo ya está registrado";
-        if (msg.contains("password is invalid") || msg.contains("no user record"))
-            return "Correo o contraseña incorrectos";
-        if (msg.contains("network error"))
-            return "Sin conexión a internet";
-        if (msg.contains("badly formatted"))
-            return "Formato de correo inválido";
+        if (msg.contains("email address is already in use")) return "Este correo ya está registrado";
+        if (msg.contains("password is invalid") || msg.contains("no user record")) return "Correo o contraseña incorrectos";
+        if (msg.contains("network error")) return "Sin conexión a internet";
+        if (msg.contains("badly formatted")) return "Formato de correo inválido";
         return "Error: " + msg;
     }
 
-    // ── Getters LiveData ──────────────────────────────────────────────────────
+    // ── Getters ───────────────────────────────────────────────────────────────
 
     public LiveData<Boolean> getCargando()            { return cargando; }
     public LiveData<String>  getErrorMensaje()        { return errorMensaje; }

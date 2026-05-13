@@ -25,6 +25,8 @@ public interface ServicioDao {
     /** Servicios del cliente, ordenados del más reciente al más antiguo. */
     @Query("SELECT * FROM servicios WHERE clienteUid = :clienteUid ORDER BY timestampCreacion DESC")
     LiveData<List<Servicio>> obtenerPorCliente(String clienteUid);
+    @Query("SELECT * FROM servicios WHERE clienteUid = :clienteUid ORDER BY timestampCreacion DESC")
+    List<Servicio> obtenerPorClienteSync(String clienteUid);
 
     /** Servicios del proveedor, ordenados del más reciente al más antiguo. */
     @Query("SELECT * FROM servicios WHERE proveedorUid = :proveedorUid ORDER BY timestampCreacion DESC")

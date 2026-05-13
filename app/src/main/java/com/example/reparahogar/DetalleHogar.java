@@ -15,6 +15,7 @@ import com.example.reparahogar.model.Servicio;
 import com.example.reparahogar.viewmodel.ServicioViewModel;
 import com.example.reparahogar.viewmodel.ViewModelFactory;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -22,19 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Pantalla principal del cliente (dueño de casa).
- *
- * Responsabilidades:
- *  1. Chips de categoría → FragmentSeleccionEspecificacion
- *  2. Lista de mantenimientos solicitados (Room → Firestore en tiempo real)
- *  3. BottomNav: Inicio | Calendario | Notificaciones
- *  4. Botón de perfil → FragmentPerfil
- *  5. Botón de logout → MainActivity
+ * Pantalla principal del cliente.
+ * Badge rojo en Notificaciones cuando hay servicios TERMINADOS sin calificar.
  */
 public class DetalleHogar extends AppCompatActivity {
 
-    private ServicioViewModel servicioViewModel;
+    private ServicioViewModel    servicioViewModel;
     private MantenimientoAdapter adapter;
+    private BottomNavigationView bottomNav;
     private final List<Servicio> listaServicios = new ArrayList<>();
 
     @Override
@@ -43,36 +39,25 @@ public class DetalleHogar extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_detalle_hogar);
 
-        // ── ViewModels ────────────────────────────────────────────────────────
         servicioViewModel = new ViewModelProvider(
-                this,
-                new ViewModelFactory(getApplication())
-        ).get(ServicioViewModel.class);
+                this, new ViewModelFactory(getApplication()))
+                .get(ServicioViewModel.class);
 
-        // ── Toolbar ───────────────────────────────────────────────────────────
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> cerrarSesion());
 
-        // ── Botón perfil ──────────────────────────────────────────────────────
         ImageButton btnPerfil = findViewById(R.id.btnPerfil);
         if (btnPerfil != null) {
-            btnPerfil.setOnClickListener(v ->
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.mi_hogar, new FragmentPerfil())
-                            .addToBackStack(null)
-                            .commit()
-            );
+            btnPerfil.setOnClickListener(v -> abrirFragment(new FragmentPerfil()));
         }
 
-        // ── RecyclerView mantenimientos ───────────────────────────────────────
-        RecyclerView rvMantenimientos = findViewById(R.id.rvMantenimientos);
-        if (rvMantenimientos != null) {
-            rvMantenimientos.setLayoutManager(new LinearLayoutManager(this));
+        RecyclerView rv = findViewById(R.id.rvMantenimientos);
+        if (rv != null) {
+            rv.setLayoutManager(new LinearLayoutManager(this));
             adapter = new MantenimientoAdapter(listaServicios, this::abrirCalificacion);
-            rvMantenimientos.setAdapter(adapter);
+            rv.setAdapter(adapter);
         }
 
-        // ── Chips de categoría ────────────────────────────────────────────────
         findViewById(R.id.chipPlomeria)
                 .setOnClickListener(v -> irASeleccion("Agua / Plomería"));
         findViewById(R.id.chipElectricidad)
@@ -80,13 +65,11 @@ public class DetalleHogar extends AppCompatActivity {
         findViewById(R.id.chipGas)
                 .setOnClickListener(v -> irASeleccion("Gas"));
 
-        // ── Bottom Navigation ─────────────────────────────────────────────────
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav = findViewById(R.id.bottom_navigation);
         if (bottomNav != null) {
             bottomNav.setOnItemSelectedListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.page_1) {
-                    // Inicio: limpiar back-stack de fragments
                     getSupportFragmentManager().popBackStack(
                             null,
                             androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -95,6 +78,9 @@ public class DetalleHogar extends AppCompatActivity {
                     abrirFragment(new FragmentCalendario());
                     return true;
                 } else if (id == R.id.page_3) {
+                    // Quitar badge al abrir notificaciones
+                    BadgeDrawable badge = bottomNav.getBadge(R.id.page_3);
+                    if (badge != null) badge.setVisible(false);
                     abrirFragment(new FragmentNotificaciones());
                     return true;
                 }
@@ -102,47 +88,62 @@ public class DetalleHogar extends AppCompatActivity {
             });
         }
 
-        // ── Cargar servicios del cliente ──────────────────────────────────────
         cargarServicios();
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void cargarServicios() {
         String uid = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid() : "";
-        if (!uid.isEmpty()) {
-            servicioViewModel.getServiciosCliente(uid).observe(this, servicios -> {
-                listaServicios.clear();
-                if (servicios != null) listaServicios.addAll(servicios);
-                if (adapter != null) adapter.notifyDataSetChanged();
-            });
+        if (uid.isEmpty()) return;
+
+        servicioViewModel.getServiciosCliente(uid).observe(this, servicios -> {
+            listaServicios.clear();
+            if (servicios != null) listaServicios.addAll(servicios);
+            if (adapter != null) adapter.notifyDataSetChanged();
+            actualizarBadge(servicios);
+        });
+    }
+
+    /** Badge con el número de servicios TERMINADOS que aún no han sido calificados. */
+    private void actualizarBadge(List<Servicio> servicios) {
+        if (bottomNav == null) return;
+        int terminados = 0;
+        if (servicios != null)
+            for (Servicio s : servicios)
+                if (Servicio.ESTADO_TERMINADO.equals(s.getEstado())) terminados++;
+
+        BadgeDrawable badge = bottomNav.getOrCreateBadge(R.id.page_3);
+        if (terminados > 0) {
+            badge.setNumber(terminados);
+            badge.setVisible(true);
+        } else {
+            badge.setVisible(false);
         }
     }
 
     private void cerrarSesion() {
         FirebaseAuth.getInstance().signOut();
-        Intent intent = new Intent(DetalleHogar.this, MainActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
 
     private void irASeleccion(String categoria) {
-        FragmentSeleccionEspecificacion fragment = new FragmentSeleccionEspecificacion();
+        FragmentSeleccionEspecificacion frag = new FragmentSeleccionEspecificacion();
         Bundle args = new Bundle();
         args.putString("categoria", categoria);
-        fragment.setArguments(args);
-        abrirFragment(fragment);
+        frag.setArguments(args);
+        abrirFragment(frag);
     }
 
     private void abrirCalificacion(Servicio servicio) {
-        FragmentCalificacion fragment = new FragmentCalificacion();
+        FragmentCalificacion frag = new FragmentCalificacion();
         Bundle args = new Bundle();
         args.putString("servicioId",   servicio.getId());
         args.putString("proveedorUid", servicio.getProveedorUid());
-        fragment.setArguments(args);
-        abrirFragment(fragment);
+        frag.setArguments(args);
+        abrirFragment(frag);
     }
 
     private void abrirFragment(androidx.fragment.app.Fragment fragment) {

@@ -31,7 +31,7 @@ public class FragmentServicioConfirmado extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflamos tu diseño de éxito
-        View view = inflater.inflate(R.layout.fragment_servicio_confirmado2, container, false);
+        View view = inflater.inflate(R.layout.fragment_servicio_confirmado, container, false);
 
         // Referencias de los componentes del diseño que elegiste
         ImageButton btnClose = view.findViewById(R.id.btnClose);
