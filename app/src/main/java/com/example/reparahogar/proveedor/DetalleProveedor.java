@@ -169,9 +169,11 @@ public class DetalleProveedor extends AppCompatActivity {
         args.putString("idCita",    servicio.getId());
         args.putString("categoria", servicio.getCategoria());
         args.putString("fecha",     servicio.getFecha());
+        args.putString("direccion", servicio.getDireccion());  // nuevo
+        args.putString("hora",      servicio.getHora());       // nuevo
+        args.putString("clienteUid", servicio.getClienteUid()); // nuevo
         fragment.setArguments(args);
 
-        // Mostrar el contenedor antes de cargar el fragment
         findViewById(R.id.contenedorFragments).setVisibility(View.VISIBLE);
 
         getSupportFragmentManager().beginTransaction()

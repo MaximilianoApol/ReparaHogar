@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nestedScrollViewPerfil"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:fillViewport="true"
+    android:background="@color/white"
+    android:isScrollContainer="true">
 
+    <!-- clipToPadding="false" permite que el scroll suba aunque se acabe el contenido -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,7 +23,7 @@
             android:background="#00468B"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:navigationIconTint="@color/white"
-            app:title="Proveedor"
+            app:title="Mi Perfil"
             app:titleCentered="true"
             app:titleTextColor="@color/white" />
 
@@ -27,25 +32,29 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_gravity="center"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="24dp"
             android:background="#E1D5F5"
             android:padding="5dp"
             android:src="@drawable/ic_user_circle"
             app:shapeAppearanceOverlay="@style/CircleImage" />
 
+        <!-- ── Card: Información general ── -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="12dp"
-            android:text="Perfil"
-            android:textStyle="bold" />
-
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="4dp"
+            android:text="Información general"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:textColor="#333333"/>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="12dp"
             app:cardCornerRadius="12dp"
             app:strokeColor="#E0E0E0"
             app:strokeWidth="1dp">
@@ -56,78 +65,149 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_edit" />
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nombre" android:textStyle="bold" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Maximialino Apolonio Cayetano" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:orientation="horizontal">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_edit" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Agregar una descripcion" android:textColor="#666666" />
-                </LinearLayout>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Horario de atención" android:textStyle="bold" />
-                <LinearLayout
+                <!-- Nombre -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilNombre"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="16dp"> <com.google.android.material.textfield.TextInputLayout
+                    android:layout_marginBottom="12dp"
+                    android:hint="Nombre completo"
+                    app:startIconDrawable="@drawable/ic_user"
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@drawable/ic_edit"
+                    app:endIconTint="#00468B">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:inputType="textPersonName"
+                        android:textColor="#333333"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Descripción -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDescripcion"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    android:hint="Descripción (ej: 10 años de experiencia...)"
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@drawable/ic_edit"
+                    app:endIconTint="#00468B">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDescripcion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:inputType="textMultiLine"
+                        android:minLines="2"
+                        android:maxLines="4"
+                        android:textColor="#333333"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ── Card: Horario ── -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="4dp"
+            android:text="Horario de atención"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:textColor="#333333"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="#E0E0E0"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilHoraInicio"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Desde"
+                    android:layout_marginEnd="8dp"
+                    android:hint="Hora inicio"
                     app:startIconDrawable="@drawable/ic_clock"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@drawable/ic_edit"
+                    app:endIconTint="#00468B">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etHoraInicio"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="09:00 AM"
                         android:focusable="false"
-                        android:clickable="true" />
+                        android:clickable="false"
+                        android:cursorVisible="false"
+                        android:textColor="#333333"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
-                    <View android:layout_width="12dp" android:layout_height="1px"/>
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilHoraFin"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Hora fin"
+                    app:startIconDrawable="@drawable/ic_clock"
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@drawable/ic_edit"
+                    app:endIconTint="#00468B">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="0dp"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etHoraFin"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="Hasta"
-                        app:startIconDrawable="@drawable/ic_clock"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etHoraFin"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="02:00 PM"
-                            android:focusable="false"
-                            android:clickable="true" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-            </LinearLayout>
+                        android:focusable="false"
+                        android:clickable="false"
+                        android:cursorVisible="false"
+                        android:textColor="#333333"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-
-
+        <!-- ── Card: Contacto ── -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="4dp"
             android:text="Contacto"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:textColor="#333333"/>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="12dp"
             app:cardCornerRadius="12dp"
             app:strokeColor="#E0E0E0"
             app:strokeWidth="1dp">
-
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -135,35 +215,66 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- Teléfono -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilTelefono"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Teléfono"
+                    app:startIconDrawable="@drawable/ic_phone"
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@drawable/ic_edit"
+                    app:endIconTint="#00468B">
 
-                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="20dp">
-                    <ImageView android:id="@+id/icEdit" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_edit" />
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/icEdit" android:layout_marginStart="16dp" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nombre" android:textSize="16sp" android:textStyle="bold" />
-                        <TextView android:id="@+id/txtNombre" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Maximiliano Apolonio Cayetano" />
-                    </LinearLayout>
-                </RelativeLayout>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTelefono"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:inputType="phone"
+                        android:textColor="#333333"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Correo -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCorreo"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Correo electrónico"
+                    app:startIconDrawable="@drawable/ic_email">
 
-                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="20dp">
-                    <ImageView android:id="@+id/icPhone" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_phone" />
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/icPhone" android:layout_marginStart="16dp" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Teléfono" android:textSize="16sp" android:textStyle="bold" />
-                        <TextView android:id="@+id/txtTelefono" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2331207067" />
-                    </LinearLayout>
-                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:src="@drawable/ic_edit" />
-                </RelativeLayout>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCorreo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:inputType="textEmailAddress" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-
-                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-                    <ImageView android:id="@+id/icMail" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_email" />
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/icMail" android:layout_marginStart="16dp" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Correo" android:textSize="16sp" android:textStyle="bold" />
-                        <TextView android:id="@+id/txtCorreo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="apoloniom103@gmail.com" />
-                    </LinearLayout>
-                </RelativeLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Botón guardar -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardarPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="32dp"
+            android:backgroundTint="#00468B"
+            android:text="Guardar cambios"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:cornerRadius="28dp"
+            app:icon="@drawable/ic_check"
+            app:iconTint="@color/white"
+            android:visibility="gone"/>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

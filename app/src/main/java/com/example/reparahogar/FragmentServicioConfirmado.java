@@ -17,50 +17,78 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class FragmentServicioConfirmado extends Fragment {
 
     private String idCita;
+    private String clienteUid;
     private FirebaseFirestore db;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        db = FirebaseFirestore.getInstance(); // Inicializar Firestore
+        db = FirebaseFirestore.getInstance();
         if (getArguments() != null) {
-            idCita = getArguments().getString("idCita");
+            idCita     = getArguments().getString("idCita");
+            clienteUid = getArguments().getString("clienteUid");
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflamos tu diseño de éxito
         View view = inflater.inflate(R.layout.fragment_servicio_confirmado, container, false);
 
-        // Referencias de los componentes del diseño que elegiste
-        ImageButton btnClose = view.findViewById(R.id.btnClose);
+        ImageButton    btnClose   = view.findViewById(R.id.btnClose);
         MaterialButton btnGuardar = view.findViewById(R.id.btnGuardarEstado);
-        TextView txtResumenNombre = view.findViewById(R.id.txtSuccess); // Del include
-        TextView txtResumenFecha = view.findViewById(R.id.txtNombreServicioResumen); // Del include
+        TextView txtCategoria     = view.findViewById(R.id.txtSuccess);
+        TextView txtDireccion     = view.findViewById(R.id.txtResumenDireccion);
+        TextView txtHora          = view.findViewById(R.id.txtResumenHora);
+        TextView txtCliente       = view.findViewById(R.id.txtResumenCliente);
 
-        // Lógica para ACTUALIZAR UI
-        // Seteamos datos del bundle si es necesario
-        if (getArguments() != null) {
-            txtResumenNombre.setText(getArguments().getString("categoria"));
+        // Bloquear clicks
+        view.setClickable(true);
+        view.setOnClickListener(v -> {});
+        View cardInfo = view.findViewById(R.id.cardServiceInfo);
+        if (cardInfo != null) {
+            cardInfo.setClickable(true);
+            cardInfo.setOnClickListener(v -> {});
         }
 
-        // Lógica del botón de cierre
-        btnClose.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        // Llenar datos básicos desde el bundle
+        if (getArguments() != null) {
+            txtCategoria.setText(getArguments().getString("categoria", "—"));
+            txtDireccion.setText(getArguments().getString("direccion", "—"));
+            txtHora.setText(getArguments().getString("hora", "—"));
+        }
 
-        // Lógica para ACTUALIZAR FIRESTORE
+        // Buscar nombre del cliente en Firestore
+        if (clienteUid != null && !clienteUid.isEmpty()) {
+            db.collection("users").document(clienteUid)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists() && txtCliente != null) {
+                            String nombre = doc.getString("nombre");
+                            txtCliente.setText(nombre != null ? nombre : "—");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        if (txtCliente != null) txtCliente.setText("—");
+                    });
+        }
+
+        btnClose.setOnClickListener(v ->
+                getParentFragmentManager().popBackStack(
+                        null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE));
+
         btnGuardar.setOnClickListener(v -> {
             if (idCita != null) {
-                // DESPUÉS:
                 db.collection("servicios").document(idCita)
                         .update("estado", Servicio.ESTADO_TERMINADO)
                         .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(getContext(), "Servicio Finalizado", Toast.LENGTH_SHORT).show();
-                            getParentFragmentManager().popBackStack(); // Regresa a la agenda
+                            Toast.makeText(getContext(), "Servicio Finalizado",
+                                    Toast.LENGTH_SHORT).show();
+                            getParentFragmentManager().popBackStack(
+                                    null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
                         })
-                        .addOnFailureListener(e -> {
-                            Toast.makeText(getContext(), "Error al actualizar", Toast.LENGTH_SHORT).show();
-                        });
+                        .addOnFailureListener(e ->
+                                Toast.makeText(getContext(), "Error al actualizar",
+                                        Toast.LENGTH_SHORT).show());
             }
         });
 
