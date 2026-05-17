@@ -261,8 +261,18 @@ public class FragmentPerfilProveedor extends Fragment {
         FirebaseFirestore.getInstance().collection("proveedores").document(uid)
                 .update("nombre", nombre, "descripcion", descripcion, "telefono", telefono, "horaInicio", hIni, "horaFin", hFin)
                 .addOnSuccessListener(unused -> {
-                    Toast.makeText(getContext(), "✓ Perfil actualizado", Toast.LENGTH_SHORT).show();
-                    btnGuardar.setVisibility(View.GONE);
+                    // Verificar que el fragmento sigue vivo antes de usar getContext()
+                    if (isAdded() && getContext() != null) {
+                        Toast.makeText(getContext(), "✓ Perfil actualizado",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    if (btnGuardar != null) btnGuardar.setVisibility(View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    if (isAdded() && getContext() != null) {
+                        Toast.makeText(getContext(), "Error: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
 

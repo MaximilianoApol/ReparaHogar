@@ -3,6 +3,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -42,13 +43,15 @@ public class DetalleHogar extends AppCompatActivity {
                 .get(ServicioViewModel.class);
 
 
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> cerrarSesion());
-
-        ImageButton btnPerfil = findViewById(R.id.btnPerfil);
-        if (btnPerfil != null) {
-            btnPerfil.setOnClickListener(v -> abrirFragment(new FragmentPerfil()));
+// Reemplaza en DetalleHogar.java el bloque del toolbar por esto:
+        LinearLayout header = findViewById(R.id.headerLayout);
+        ImageButton btnLogout = findViewById(R.id.btnLogout);
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> cerrarSesion());
         }
+
+// El toolbar sigue existente (hidden) para no romper el código,
+// pero ya no tiene navigationIcon funcional — lo maneja btnLogout
 
 
         RecyclerView rv = findViewById(R.id.rvMantenimientos);

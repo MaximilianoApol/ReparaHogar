@@ -2,12 +2,39 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="shrine_pink_100">#1A4E8A</color>
-    <color name="shrine_pink_900">#FFFFFFFF</color>
-    <color name="turquesa">#00ACC1</color>
-    <color name="gris">#333333</color>
-    <color name="gris_claro">#E0E0E0</color>
-    <color name="amarillo">#F6D540</color>
-    <color name="anaranjado">#FF6D00</color>
 
+    <!-- Paleta principal -->
+    <color name="primary_dark">#1A1A2E</color>
+    <color name="primary_medium">#16213E</color>
+    <color name="primary_accent">#0F3460</color>
+    <color name="highlight">#E94560</color>
+
+    <!-- Superficies -->
+    <color name="surface_bg">#F0F4FF</color>
+    <color name="surface_card">#FFFFFF</color>
+    <color name="surface_input">#F8FAFF</color>
+
+    <!-- Texto -->
+    <color name="text_primary">#1A1A2E</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="text_hint">#9CA3AF</color>
+
+    <!-- Estados de servicio -->
+    <color name="estado_pendiente">#F59E0B</color>
+    <color name="estado_confirmado">#3B82F6</color>
+    <color name="estado_terminado">#10B981</color>
+
+    <!-- Categorías (más vibrantes) -->
+    <color name="cat_plomeria">#06B6D4</color>
+    <color name="cat_electricidad">#F59E0B</color>
+    <color name="cat_gas">#EF4444</color>
+
+    <!-- Compatibilidad con código existente -->
+    <color name="shrine_pink_100">#0F3460</color>
+    <color name="shrine_pink_900">#FFFFFFFF</color>
+    <color name="turquesa">#06B6D4</color>
+    <color name="gris">#6B7280</color>
+    <color name="gris_claro">#E5E7EB</color>
+    <color name="amarillo">#F59E0B</color>
+    <color name="anaranjado">#EF4444</color>
 </resources>
