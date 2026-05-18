@@ -17,13 +17,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.reparahogar.adapter.MantenimientoAdapter;
+import com.example.reparahogar.database.AppDatabase;
+import com.example.reparahogar.model.Calificacion;
 import com.example.reparahogar.model.Servicio;
+import com.example.reparahogar.utils.ExecutorUtils;
 import com.example.reparahogar.viewmodel.ServicioViewModel;
 import com.example.reparahogar.viewmodel.ViewModelFactory;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -81,15 +85,26 @@ public class DetalleHogar extends AppCompatActivity {
         btnVerTodo = findViewById(R.id.btnVerTodo);
         if (btnVerTodo != null) {
             btnVerTodo.setOnClickListener(v -> {
-                if (mostrandoTodo) {
-                    filtrarServiciosHoy(listaCompletaFirebase);
-                    mostrandoTodo = false;
-                    btnVerTodo.setText("Ver todos");
-                } else {
-                    mostrarTodosLosServicios();
-                    mostrandoTodo = true;
-                    btnVerTodo.setText("Hoy");
-                }
+                String uid2 = FirebaseAuth.getInstance().getUid();
+                if (uid2 == null) return;
+
+                ExecutorUtils.getExecutor().execute(() -> {
+                    List<String> ids = AppDatabase.getInstance(this)
+                            .calificacionDao()
+                            .obtenerIdsCalificadosPorCliente(uid2);
+
+                    runOnUiThread(() -> {
+                        if (mostrandoTodo) {
+                            filtrarServiciosHoy(listaCompletaFirebase, ids);
+                            mostrandoTodo = false;
+                            btnVerTodo.setText("Ver todos");
+                        } else {
+                            mostrarTodosLosServicios(ids);
+                            mostrandoTodo = true;
+                            btnVerTodo.setText("Hoy");
+                        }
+                    });
+                });
             });
         }
 
@@ -97,7 +112,12 @@ public class DetalleHogar extends AppCompatActivity {
         configurarCategorias(); // <--- ESTO ES LO QUE FALTABA
         configurarNavegacion();
 
-        cargarServicios();
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid != null) {
+            sincronizarCalificacionesDesdeFirestore(uid);
+        } else {
+            cargarServicios();
+        }
     }
 
     private void configurarCategorias() {
@@ -115,56 +135,68 @@ public class DetalleHogar extends AppCompatActivity {
         if (uid == null) return;
 
         servicioViewModel.getServiciosCliente(uid).observe(this, servicios -> {
-            if (servicios != null) {
-                this.listaCompletaFirebase = servicios;
-                if (mostrandoTodo) {
-                    mostrarTodosLosServicios();
-                } else {
-                    filtrarServiciosHoy(servicios);
-                }
-                actualizarBadge(servicios);
-            }
+            if (servicios == null) return;
+            this.listaCompletaFirebase = servicios;
+
+            // Obtener calificados en background y luego actualizar UI
+            ExecutorUtils.getExecutor().execute(() -> {
+                List<String> idsCalificados = AppDatabase.getInstance(this)
+                        .calificacionDao()
+                        .obtenerIdsCalificadosPorCliente(uid);
+
+                runOnUiThread(() -> {
+                    if (mostrandoTodo) {
+                        mostrarTodosLosServicios(idsCalificados);
+                    } else {
+                        filtrarServiciosHoy(servicios, idsCalificados);
+                    }
+                    actualizarBadge(servicios, idsCalificados);
+                });
+            });
         });
     }
 
-    private void filtrarServiciosHoy(List<Servicio> servicios) {
-        String hoy = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
-        listaServiciosVisibles.clear();
+    private void filtrarServiciosHoy(List<Servicio> servicios, List<String> idsCalificados) {
+        String hoy = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        List<Servicio> hoyList = new ArrayList<>();
 
         for (Servicio s : servicios) {
             if (hoy.equals(s.getFecha())) {
-                listaServiciosVisibles.add(s);
+                hoyList.add(s);
             }
         }
 
-        if (adapter != null) adapter.notifyDataSetChanged();
+        if (adapter != null) adapter.actualizarLista(hoyList, idsCalificados);
 
         if (btnVerTodo != null) {
-            btnVerTodo.setVisibility(listaServiciosVisibles.size() < listaCompletaFirebase.size()
+            btnVerTodo.setVisibility(hoyList.size() < listaCompletaFirebase.size()
                     ? View.VISIBLE : View.GONE);
         }
     }
 
-    private void mostrarTodosLosServicios() {
-        listaServiciosVisibles.clear();
-        listaServiciosVisibles.addAll(listaCompletaFirebase);
-        if (adapter != null) adapter.notifyDataSetChanged();
-
+    private void mostrarTodosLosServicios(List<String> idsCalificados) {
+        if (adapter != null) adapter.actualizarLista(listaCompletaFirebase, idsCalificados);
         if (btnVerTodo != null) btnVerTodo.setVisibility(View.VISIBLE);
     }
 
-    private void actualizarBadge(List<Servicio> servicios) {
+    private void actualizarBadge(List<Servicio> servicios, List<String> idsCalificados) {
         if (bottomNav == null) return;
-        int terminados = 0;
+
+        int sinCalificar = 0;
         for (Servicio s : servicios) {
-            if (Servicio.ESTADO_TERMINADO.equals(s.getEstado())) terminados++;
+            if (Servicio.ESTADO_TERMINADO.equals(s.getEstado())
+                    && !idsCalificados.contains(s.getId())) {
+                sinCalificar++;
+            }
         }
+
         BadgeDrawable badge = bottomNav.getOrCreateBadge(R.id.page_3);
-        if (terminados > 0) {
-            badge.setNumber(terminados);
+        if (sinCalificar > 0) {
+            badge.setNumber(sinCalificar);
             badge.setVisible(true);
         } else {
             badge.setVisible(false);
+            badge.clearNumber();
         }
     }
 
@@ -220,5 +252,55 @@ public class DetalleHogar extends AppCompatActivity {
                 if (bottomNav != null) bottomNav.setSelectedItemId(R.id.page_1);
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresca badge y lista al volver de FragmentCalificacion
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null || listaCompletaFirebase.isEmpty()) return;
+
+        ExecutorUtils.getExecutor().execute(() -> {
+            List<String> idsCalificados = AppDatabase.getInstance(this)
+                    .calificacionDao()
+                    .obtenerIdsCalificadosPorCliente(uid);
+
+            runOnUiThread(() -> {
+                actualizarBadge(listaCompletaFirebase, idsCalificados);
+                if (mostrandoTodo) {
+                    mostrarTodosLosServicios(idsCalificados);
+                } else {
+                    filtrarServiciosHoy(listaCompletaFirebase, idsCalificados);
+                }
+            });
+        });
+    }
+
+    private void sincronizarCalificacionesDesdeFirestore(String uid) {
+        FirebaseFirestore.getInstance()
+                .collection("calificaciones")
+                .whereEqualTo("clienteUid", uid)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        // Hay calificaciones → sincronizar a Room primero
+                        List<Calificacion> calificaciones = query.toObjects(Calificacion.class);
+                        ExecutorUtils.getExecutor().execute(() -> {
+                            AppDatabase db = AppDatabase.getInstance(this);
+                            for (Calificacion c : calificaciones) {
+                                db.calificacionDao().insertar(c);
+                            }
+                            runOnUiThread(() -> cargarServicios());
+                        });
+                    } else {
+                        // No hay calificaciones pero igual hay que cargar servicios
+                        cargarServicios();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Si falla la red, cargar igual desde Room/Firestore
+                    cargarServicios();
+                });
     }
 }

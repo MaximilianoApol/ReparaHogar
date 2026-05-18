@@ -7,6 +7,8 @@ import androidx.room.Query;
 
 import com.example.reparahogar.model.Calificacion;
 
+import java.util.List;
+
 @Dao
 public interface CalificacionDao {
 
@@ -19,4 +21,7 @@ public interface CalificacionDao {
 
     @Query("SELECT * FROM calificaciones WHERE servicioId = :servicioId LIMIT 1")
     Calificacion obtenerPorServicio(String servicioId);
+    @Query("SELECT servicioId FROM calificaciones WHERE clienteUid = :clienteUid")
+    List<String> obtenerIdsCalificadosPorCliente(String clienteUid);
+
 }

@@ -37,59 +37,54 @@ public class CalificacionRepository {
                 new ProveedorRepository(context);
     }
 
-    public void guardar(Calificacion calificacion,
-                        OnResultListener listener) {
-
+    public void guardar(Calificacion calificacion, OnResultListener listener) {
         ExecutorUtils.getExecutor().execute(() -> {
 
-            int yaCalificado =
-                    calificacionDao.contarPorServicio(
-                            calificacion.getServicioId());
-
-            if (yaCalificado > 0) {
-
-                if (listener != null) {
-
-                    mainHandler.post(() ->
-                            listener.onError(
-                                    "Este servicio ya fue calificado"));
-                }
-
-                return;
-            }
-
-            String nuevoId = firestore
-                    .collection(COLECCION)
-                    .document()
-                    .getId();
-
-            calificacion.setId(nuevoId);
-
+            // Primero verificar en Firestore (fuente de verdad), no solo en Room
             firestore.collection(COLECCION)
-                    .document(nuevoId)
-                    .set(calificacion)
+                    .whereEqualTo("servicioId", calificacion.getServicioId())
+                    .whereEqualTo("clienteUid", calificacion.getClienteUid())
+                    .get()
+                    .addOnSuccessListener(query -> {
+                        if (!query.isEmpty()) {
+                            // Ya existe en Firestore → sincronizar a Room y bloquear
+                            Calificacion existente = query.toObjects(Calificacion.class).get(0);
+                            ExecutorUtils.getExecutor().execute(() ->
+                                    calificacionDao.insertar(existente));
 
-                    .addOnSuccessListener(unused -> {
+                            if (listener != null) {
+                                mainHandler.post(() ->
+                                        listener.onError("Este servicio ya fue calificado"));
+                            }
+                            return;
+                        }
 
-                        ExecutorUtils.getExecutor().execute(() ->
-                                calificacionDao.insertar(calificacion));
+                        // No existe → guardar normalmente
+                        String nuevoId = firestore.collection(COLECCION).document().getId();
+                        calificacion.setId(nuevoId);
 
-                        recalcularPromedio(
-                                calificacion.getProveedorUid(),
-                                listener);
+                        firestore.collection(COLECCION)
+                                .document(nuevoId)
+                                .set(calificacion)
+                                .addOnSuccessListener(unused -> {
+                                    ExecutorUtils.getExecutor().execute(() ->
+                                            calificacionDao.insertar(calificacion));
+                                    recalcularPromedio(calificacion.getProveedorUid(), listener);
+                                })
+                                .addOnFailureListener(e -> {
+                                    if (listener != null) {
+                                        mainHandler.post(() -> listener.onError(e.getMessage()));
+                                    }
+                                });
                     })
-
                     .addOnFailureListener(e -> {
-
                         if (listener != null) {
-
                             mainHandler.post(() ->
-                                    listener.onError(e.getMessage()));
+                                    listener.onError("Error al verificar calificación: " + e.getMessage()));
                         }
                     });
         });
     }
-
     private void recalcularPromedio(String proveedorUid,
                                     OnResultListener listener) {
 

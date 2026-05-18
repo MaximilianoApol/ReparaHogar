@@ -14,6 +14,7 @@ import com.example.reparahogar.model.Servicio;
 import androidx.annotation.Nullable;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -30,6 +31,27 @@ public class MantenimientoAdapter extends RecyclerView.Adapter<MantenimientoAdap
                             @Nullable OnCalificarListener onCalificarListener) {
         this.lista = lista;
         this.onCalificarListener = onCalificarListener;
+    }
+
+    public void actualizarLista(List<Servicio> nuevaLista, List<String> idsCalificados) {
+        lista.clear();
+
+        // Separar en dos grupos
+        List<Servicio> sinCalificar = new ArrayList<>();
+        List<Servicio> resto = new ArrayList<>();
+
+        for (Servicio s : nuevaLista) {
+            if (Servicio.ESTADO_TERMINADO.equals(s.getEstado())
+                    && !idsCalificados.contains(s.getId())) {
+                sinCalificar.add(s);
+            } else {
+                resto.add(s);
+            }
+        }
+
+        lista.addAll(sinCalificar);
+        lista.addAll(resto);
+        notifyDataSetChanged();
     }
 
 
