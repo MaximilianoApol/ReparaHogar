@@ -24,11 +24,13 @@
 
         <activity
             android:name=".DetalleHogar"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.ReparaHogar"/>
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:theme="@style/Theme.ReparaHogar"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

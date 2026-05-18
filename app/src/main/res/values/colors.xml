@@ -3,10 +3,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Paleta principal -->
-    <color name="primary_dark">#1A1A2E</color>
+    <!-- Paleta principal — fondo oscuro, contenido claro -->
+    <color name="primary_dark">#0F3460</color>
     <color name="primary_medium">#16213E</color>
-    <color name="primary_accent">#0F3460</color>
+    <color name="primary_accent">#E94560</color>
     <color name="highlight">#E94560</color>
 
     <!-- Superficies -->
@@ -14,7 +14,11 @@
     <color name="surface_card">#FFFFFF</color>
     <color name="surface_input">#F8FAFF</color>
 
-    <!-- Texto -->
+    <!-- Texto sobre fondos OSCUROS (headers) -->
+    <color name="text_on_dark">#FFFFFF</color>
+    <color name="text_on_dark_secondary">#B8C5E0</color>
+
+    <!-- Texto sobre fondos CLAROS (cards, body) -->
     <color name="text_primary">#1A1A2E</color>
     <color name="text_secondary">#6B7280</color>
     <color name="text_hint">#9CA3AF</color>
@@ -24,12 +28,12 @@
     <color name="estado_confirmado">#3B82F6</color>
     <color name="estado_terminado">#10B981</color>
 
-    <!-- Categorías (más vibrantes) -->
+    <!-- Categorías -->
     <color name="cat_plomeria">#06B6D4</color>
     <color name="cat_electricidad">#F59E0B</color>
     <color name="cat_gas">#EF4444</color>
 
-    <!-- Compatibilidad con código existente -->
+    <!-- Compatibilidad -->
     <color name="shrine_pink_100">#0F3460</color>
     <color name="shrine_pink_900">#FFFFFFFF</color>
     <color name="turquesa">#06B6D4</color>

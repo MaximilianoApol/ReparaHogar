@@ -15,7 +15,8 @@
             android:id="@+id/toolbarVerificacion"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="#00468B">
+            android:background="@color/primary_dark"
+            android:layout_marginTop="28dp">
 
             <TextView
                 android:layout_width="wrap_content"

@@ -6,15 +6,19 @@
     android:background="@color/white">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:elevation="0dp">
+
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbarCalendar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="#00468B"
+            android:background="@color/primary_dark"
+            android:layout_marginTop="28dp"
             app:layout_scrollFlags="scroll|enterAlways">
+
             <ImageButton
                 android:id="@+id/btnBackCalendar"
                 android:layout_width="48dp"
@@ -22,6 +26,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_arrow_back"
                 app:tint="@color/white" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

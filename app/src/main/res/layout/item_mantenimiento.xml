@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
     app:cardCornerRadius="20dp"
-    app:cardElevation="3dp"
+    app:cardElevation="2dp"
     app:cardBackgroundColor="@color/surface_card"
     app:strokeWidth="0dp">
 
@@ -16,15 +16,14 @@
         android:padding="16dp"
         android:gravity="center_vertical">
 
-        <!-- Indicador de color lateral -->
+        <!-- Indicador lateral de color -->
         <View
             android:id="@+id/indicadorEstado"
             android:layout_width="5dp"
-            android:layout_height="56dp"
-            android:background="#F59E0B"
+            android:layout_height="52dp"
+            android:background="@color/estado_pendiente"
             android:layout_marginEnd="14dp"/>
 
-        <!-- Contenido -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -37,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:text="Plomería"
                 android:textStyle="bold"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textColor="@color/text_primary"/>
 
             <TextView
@@ -61,10 +60,9 @@
                 android:layout_marginTop="6dp"/>
         </LinearLayout>
 
-        <!-- Flecha -->
         <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:src="@drawable/ic_arrow_back"
             android:rotation="180"
             app:tint="@color/text_hint"/>

@@ -1,15 +1,19 @@
 package com.example.reparahogar;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.CalendarView;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -43,8 +47,21 @@ public class FragmentCalendario extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        // 1. Configurar la barra de estado ANTES del return
+        if (getActivity() != null) {
+            Window window = getActivity().getWindow();
+            window.setStatusBarColor(Color.parseColor("#00468B"));
+
+            WindowInsetsControllerCompat windowInsetsController =
+                    WindowCompat.getInsetsController(window, window.getDecorView());
+
+            if (windowInsetsController != null) {
+                windowInsetsController.setAppearanceLightStatusBars(false);
+            }
+        }
 
         return inflater.inflate(R.layout.fragment_calendario, container, false);
+
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.example.reparahogar.proveedor;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -9,6 +10,8 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,7 +40,14 @@ public class DetalleProveedor extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_detalle_proveedor);
+// 1. Cambiar el color de fondo a azul
+        getWindow().setStatusBarColor(Color.parseColor("#00468B"));
 
+// 2. Forzar iconos blancos (Modo Oscuro de barra)
+        WindowInsetsControllerCompat windowInsetsController =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+
+        windowInsetsController.setAppearanceLightStatusBars(false);
         servicioViewModel = new ViewModelProvider(
                 this,
                 new ViewModelFactory(getApplication())

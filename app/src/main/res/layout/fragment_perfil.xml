@@ -11,9 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:layout_marginTop="28dp"
-        android:background="#00468B"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="0dp">
+        android:background="@color/primary_dark"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
             android:id="@+id/btnBack"
@@ -59,6 +58,7 @@
         app:layout_constraintTop_toBottomOf="@id/imgProfile" />
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
@@ -74,33 +74,60 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-
             <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="20dp">
-                <ImageView android:id="@+id/icEdit" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_edit" />
-                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/icEdit" android:layout_marginStart="16dp" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nombre" android:textSize="16sp" android:textStyle="bold" />
-                    <TextView android:id="@+id/txtNombre" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Maximiliano Apolonio Cayetano" />
+                <ImageView android:id="@+id/icUserIcon" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_user_circle" app:tint="@color/primary_dark"/>
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/icUserIcon" android:layout_toStartOf="@+id/btnEditNombre" android:layout_marginStart="16dp" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nombre" android:textSize="14sp" android:textColor="#757575" />
+                    <TextView android:id="@+id/txtNombre" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Cargando..." android:textColor="@color/black" android:textStyle="bold" android:textSize="16sp" />
                 </LinearLayout>
+                <ImageView
+                    android:id="@+id/btnEditNombre"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_edit"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
             </RelativeLayout>
 
-
             <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="20dp">
-                <ImageView android:id="@+id/icPhone" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_phone" />
-                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/icPhone" android:layout_marginStart="16dp" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Teléfono" android:textSize="16sp" android:textStyle="bold" />
-                    <TextView android:id="@+id/txtTelefono" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2331207067" />
+                <ImageView android:id="@+id/icPhone" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_phone" app:tint="@color/primary_dark" />
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/icPhone" android:layout_toStartOf="@+id/btnEditTelefono" android:layout_marginStart="16dp" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Teléfono" android:textSize="14sp" android:textColor="#757575" />
+                    <TextView android:id="@+id/txtTelefono" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Cargando..." android:textColor="@color/black" android:textStyle="bold" android:textSize="16sp" />
                 </LinearLayout>
-                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:src="@drawable/ic_edit" />
+                <ImageView
+                    android:id="@+id/btnEditTelefono"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_edit"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
             </RelativeLayout>
-
 
             <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-                <ImageView android:id="@+id/icMail" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_email" />
+                <ImageView android:id="@+id/icMail" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_email" app:tint="@color/primary_dark" />
                 <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/icMail" android:layout_marginStart="16dp" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Correo" android:textSize="16sp" android:textStyle="bold" />
-                    <TextView android:id="@+id/txtCorreo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="apoloniom103@gmail.com" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Correo" android:textSize="14sp" android:textColor="#757575" />
+                    <TextView android:id="@+id/txtCorreo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Cargando..." android:textColor="@color/black" android:textStyle="bold" android:textSize="16sp" />
                 </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGuardar"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_margin="24dp"
+        android:text="Guardar Cambios"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:cornerRadius="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardInfo" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

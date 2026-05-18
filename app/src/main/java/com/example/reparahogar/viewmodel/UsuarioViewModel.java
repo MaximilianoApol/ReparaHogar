@@ -22,4 +22,8 @@ public class UsuarioViewModel extends AndroidViewModel {
     public LiveData<Usuario> getUsuario(String uid) {
         return usuarioRepository.obtenerUsuario(uid);
     }
+    public void updateUsuario(Usuario usuario, UsuarioRepository.OnResultListener listener) {
+        usuarioRepository.actualizar(usuario, listener);
+    }
+
 }
