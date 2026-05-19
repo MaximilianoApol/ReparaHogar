@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -35,6 +34,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Pantalla principal del cliente.
+ *
+ * CORRECCIÓN CRÍTICA aplicada aquí:
+ *  abrirDetalle() sanitiza TODOS los campos con nn() antes de pasarlos
+ *  como Bundle a FragmentDetalleServicio, evitando el NPE en switch(estado).
+ */
 public class DetalleHogar extends AppCompatActivity {
 
     private ServicioViewModel    servicioViewModel;
@@ -44,10 +50,8 @@ public class DetalleHogar extends AppCompatActivity {
     private TextView             btnVerTodo;
 
     private final List<Servicio> listaServiciosVisibles = new ArrayList<>();
-    private List<Servicio> listaCompletaFirebase = new ArrayList<>();
-
-    // Estado para el toggle de visualización
-    private boolean mostrandoTodo = false;
+    private List<Servicio>       listaCompletaFirebase  = new ArrayList<>();
+    private boolean              mostrandoTodo          = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,44 +59,36 @@ public class DetalleHogar extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_detalle_hogar);
 
-        // 1. Status Bar
         getWindow().setStatusBarColor(Color.parseColor("#00468B"));
-        WindowInsetsControllerCompat windowInsetsController =
+        WindowInsetsControllerCompat wic =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        if (windowInsetsController != null) {
-            windowInsetsController.setAppearanceLightStatusBars(false);
-        }
+        if (wic != null) wic.setAppearanceLightStatusBars(false);
 
-        // 2. Header
+        fragmentContainer = findViewById(R.id.mi_hogar);
+        servicioViewModel = new ViewModelProvider(
+                this, new ViewModelFactory(getApplication()))
+                .get(ServicioViewModel.class);
+
         ShapeableImageView btnPerfil = findViewById(R.id.btnPerfil);
-        ImageButton btnLogout = findViewById(R.id.btnLogout);
+        ImageButton        btnLogout = findViewById(R.id.btnLogout);
         if (btnPerfil != null) btnPerfil.setOnClickListener(v -> abrirFragment(new FragmentPerfil()));
         if (btnLogout != null) btnLogout.setOnClickListener(v -> cerrarSesion());
 
-        // 3. ViewModel
-        fragmentContainer = findViewById(R.id.mi_hogar);
-        servicioViewModel = new ViewModelProvider(this, new ViewModelFactory(getApplication())).get(ServicioViewModel.class);
-
-        // 4. RecyclerView
         RecyclerView rv = findViewById(R.id.rvMantenimientos);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
-            adapter = new MantenimientoAdapter(listaServiciosVisibles, this::abrirCalificacion);
+            adapter = new MantenimientoAdapter(listaServiciosVisibles, this::abrirDetalle);
             rv.setAdapter(adapter);
         }
 
-        // 5. Lógica del botón Toggle "Ver todo / Hoy"
         btnVerTodo = findViewById(R.id.btnVerTodo);
         if (btnVerTodo != null) {
             btnVerTodo.setOnClickListener(v -> {
-                String uid2 = FirebaseAuth.getInstance().getUid();
-                if (uid2 == null) return;
-
+                String uid = FirebaseAuth.getInstance().getUid();
+                if (uid == null) return;
                 ExecutorUtils.getExecutor().execute(() -> {
                     List<String> ids = AppDatabase.getInstance(this)
-                            .calificacionDao()
-                            .obtenerIdsCalificadosPorCliente(uid2);
-
+                            .calificacionDao().obtenerIdsCalificadosPorCliente(uid);
                     runOnUiThread(() -> {
                         if (mostrandoTodo) {
                             filtrarServiciosHoy(listaCompletaFirebase, ids);
@@ -108,26 +104,21 @@ public class DetalleHogar extends AppCompatActivity {
             });
         }
 
-        // 6. Configurar Categorías y Navegación
-        configurarCategorias(); // <--- ESTO ES LO QUE FALTABA
+        configurarCategorias();
         configurarNavegacion();
 
         String uid = FirebaseAuth.getInstance().getUid();
-        if (uid != null) {
-            sincronizarCalificacionesDesdeFirestore(uid);
-        } else {
-            cargarServicios();
-        }
+        if (uid != null) sincronizarCalificacionesDesdeFirestore(uid);
+        else             cargarServicios();
     }
 
     private void configurarCategorias() {
-        View plomeria = findViewById(R.id.chipPlomeria);
+        View plomeria     = findViewById(R.id.chipPlomeria);
         View electricidad = findViewById(R.id.chipElectricidad);
-        View gas = findViewById(R.id.chipGas);
-
-        if (plomeria != null) plomeria.setOnClickListener(v -> irASeleccion("Agua / Plomería"));
+        View gas          = findViewById(R.id.chipGas);
+        if (plomeria     != null) plomeria.setOnClickListener(v -> irASeleccion("Agua / Plomería"));
         if (electricidad != null) electricidad.setOnClickListener(v -> irASeleccion("Electricidad"));
-        if (gas != null) gas.setOnClickListener(v -> irASeleccion("Gas"));
+        if (gas          != null) gas.setOnClickListener(v -> irASeleccion("Gas"));
     }
 
     private void cargarServicios() {
@@ -136,21 +127,15 @@ public class DetalleHogar extends AppCompatActivity {
 
         servicioViewModel.getServiciosCliente(uid).observe(this, servicios -> {
             if (servicios == null) return;
-            this.listaCompletaFirebase = servicios;
+            listaCompletaFirebase = servicios;
 
-            // Obtener calificados en background y luego actualizar UI
             ExecutorUtils.getExecutor().execute(() -> {
-                List<String> idsCalificados = AppDatabase.getInstance(this)
-                        .calificacionDao()
-                        .obtenerIdsCalificadosPorCliente(uid);
-
+                List<String> ids = AppDatabase.getInstance(this)
+                        .calificacionDao().obtenerIdsCalificadosPorCliente(uid);
                 runOnUiThread(() -> {
-                    if (mostrandoTodo) {
-                        mostrarTodosLosServicios(idsCalificados);
-                    } else {
-                        filtrarServiciosHoy(servicios, idsCalificados);
-                    }
-                    actualizarBadge(servicios, idsCalificados);
+                    if (mostrandoTodo) mostrarTodosLosServicios(ids);
+                    else               filtrarServiciosHoy(servicios, ids);
+                    actualizarBadge(servicios, ids);
                 });
             });
         });
@@ -159,18 +144,13 @@ public class DetalleHogar extends AppCompatActivity {
     private void filtrarServiciosHoy(List<Servicio> servicios, List<String> idsCalificados) {
         String hoy = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         List<Servicio> hoyList = new ArrayList<>();
-
         for (Servicio s : servicios) {
-            if (hoy.equals(s.getFecha())) {
-                hoyList.add(s);
-            }
+            if (hoy.equals(s.getFecha())) hoyList.add(s);
         }
-
         if (adapter != null) adapter.actualizarLista(hoyList, idsCalificados);
-
         if (btnVerTodo != null) {
-            btnVerTodo.setVisibility(hoyList.size() < listaCompletaFirebase.size()
-                    ? View.VISIBLE : View.GONE);
+            btnVerTodo.setVisibility(
+                    hoyList.size() < listaCompletaFirebase.size() ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -181,15 +161,11 @@ public class DetalleHogar extends AppCompatActivity {
 
     private void actualizarBadge(List<Servicio> servicios, List<String> idsCalificados) {
         if (bottomNav == null) return;
-
         int sinCalificar = 0;
         for (Servicio s : servicios) {
             if (Servicio.ESTADO_TERMINADO.equals(s.getEstado())
-                    && !idsCalificados.contains(s.getId())) {
-                sinCalificar++;
-            }
+                    && !idsCalificados.contains(s.getId())) sinCalificar++;
         }
-
         BadgeDrawable badge = bottomNav.getOrCreateBadge(R.id.page_3);
         if (sinCalificar > 0) {
             badge.setNumber(sinCalificar);
@@ -200,9 +176,40 @@ public class DetalleHogar extends AppCompatActivity {
         }
     }
 
+    private void configurarNavegacion() {
+        bottomNav = findViewById(R.id.bottom_navigation);
+        if (bottomNav == null) return;
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.page_1) {
+                getSupportFragmentManager().popBackStack(
+                        null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                return true;
+            } else if (id == R.id.page_2) {
+                abrirFragment(new FragmentCalendario());
+                return true;
+            } else if (id == R.id.page_3) {
+                abrirFragment(new FragmentNotificaciones());
+                return true;
+            }
+            return false;
+        });
+
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                if (fragmentContainer != null) fragmentContainer.setVisibility(View.GONE);
+                bottomNav.setSelectedItemId(R.id.page_1);
+            }
+            String uid = FirebaseAuth.getInstance().getUid();
+            if (uid != null) sincronizarYRefrescarBadge(uid);
+        });
+    }
+
     private void cerrarSesion() {
         FirebaseAuth.getInstance().signOut();
-        startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+        startActivity(new Intent(this, MainActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
         finish();
     }
 
@@ -214,62 +221,33 @@ public class DetalleHogar extends AppCompatActivity {
         abrirFragment(frag);
     }
 
-    private void abrirCalificacion(Servicio servicio) {
+    /**
+     * CORRECCIÓN CRÍTICA del crash:
+     * Todos los campos del Servicio se sanitizan con nn() → nunca null en el Bundle.
+     * El estado usa PENDIENTE como fallback (nunca llega null al fragment).
+     */
+    private void abrirDetalle(Servicio servicio) {
         FragmentDetalleServicio frag = new FragmentDetalleServicio();
         Bundle args = new Bundle();
-        args.putString("servicioId",   servicio.getId());
-        args.putString("proveedorUid", servicio.getProveedorUid());
-        args.putString("categoria",    servicio.getCategoria());
-        args.putString("detalle",      servicio.getDetalle());
-        args.putString("estado",       servicio.getEstado());
-        args.putString("fecha",        servicio.getFecha());
-        args.putString("hora",         servicio.getHora());
-        args.putString("direccion",    servicio.getDireccion());
+        args.putString("servicioId",   nn(servicio.getId()));
+        args.putString("proveedorUid", nn(servicio.getProveedorUid()));
+        args.putString("categoria",    nn(servicio.getCategoria()));
+        args.putString("detalle",      nn(servicio.getDetalle()));
+        args.putString("estado",       servicio.getEstado() != null
+                ? servicio.getEstado() : Servicio.ESTADO_PENDIENTE);
+        args.putString("fecha",        nn(servicio.getFecha()));
+        args.putString("hora",         nn(servicio.getHora()));
+        args.putString("direccion",    nn(servicio.getDireccion()));
+        frag.setArguments(args);
         abrirFragment(frag);
     }
 
     private void abrirFragment(androidx.fragment.app.Fragment fragment) {
         if (fragmentContainer != null) fragmentContainer.setVisibility(View.VISIBLE);
-        getSupportFragmentManager().beginTransaction().replace(R.id.mi_hogar, fragment).addToBackStack(null).commit();
-    }
-
-// Elimina onResume completamente — ya no lo necesitamos así
-
-    private void configurarNavegacion() {
-        bottomNav = findViewById(R.id.bottom_navigation);
-        if (bottomNav != null) {
-            bottomNav.setOnItemSelectedListener(item -> {
-                int id = item.getItemId();
-                if (id == R.id.page_1) {
-                    getSupportFragmentManager().popBackStack(null,
-                            androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    return true;
-                } else if (id == R.id.page_2) {
-                    abrirFragment(new FragmentCalendario());
-                    return true;
-                } else if (id == R.id.page_3) {
-                    abrirFragment(new FragmentNotificaciones());
-                    return true;
-                }
-                return false;
-            });
-        }
-
-        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            int count = getSupportFragmentManager().getBackStackEntryCount();
-
-            if (count == 0) {
-                if (fragmentContainer != null) fragmentContainer.setVisibility(View.GONE);
-                if (bottomNav != null) bottomNav.setSelectedItemId(R.id.page_1);
-            }
-
-            // Cada vez que se cierra cualquier fragment, resincronizar calificaciones
-            // para que el badge se actualice inmediatamente tras calificar
-            String uid = FirebaseAuth.getInstance().getUid();
-            if (uid != null) {
-                sincronizarYRefrescarBadge(uid);
-            }
-        });
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.mi_hogar, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void sincronizarYRefrescarBadge(String uid) {
@@ -278,37 +256,22 @@ public class DetalleHogar extends AppCompatActivity {
                 .whereEqualTo("clienteUid", uid)
                 .get()
                 .addOnSuccessListener(query -> {
-                    List<String> idsCalificados = new ArrayList<>();
-
+                    List<String> ids = new ArrayList<>();
                     if (!query.isEmpty()) {
-                        List<Calificacion> calificaciones = query.toObjects(Calificacion.class);
-
-                        // Sincronizar a Room en background
+                        List<Calificacion> cals = query.toObjects(Calificacion.class);
                         ExecutorUtils.getExecutor().execute(() -> {
                             AppDatabase db = AppDatabase.getInstance(this);
-                            for (Calificacion c : calificaciones) {
-                                db.calificacionDao().insertar(c);
-                            }
+                            for (Calificacion c : cals) db.calificacionDao().insertar(c);
                         });
-
-                        for (Calificacion c : calificaciones) {
-                            idsCalificados.add(c.getServicioId());
-                        }
+                        for (Calificacion c : cals) ids.add(c.getServicioId());
                     }
-
-                    // Actualizar badge y lista con datos frescos de Firestore
                     if (!listaCompletaFirebase.isEmpty()) {
-                        actualizarBadge(listaCompletaFirebase, idsCalificados);
-                        if (mostrandoTodo) {
-                            mostrarTodosLosServicios(idsCalificados);
-                        } else {
-                            filtrarServiciosHoy(listaCompletaFirebase, idsCalificados);
-                        }
+                        actualizarBadge(listaCompletaFirebase, ids);
+                        if (mostrandoTodo) mostrarTodosLosServicios(ids);
+                        else              filtrarServiciosHoy(listaCompletaFirebase, ids);
                     }
                 });
     }
-
-
 
     private void sincronizarCalificacionesDesdeFirestore(String uid) {
         FirebaseFirestore.getInstance()
@@ -317,23 +280,21 @@ public class DetalleHogar extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(query -> {
                     if (!query.isEmpty()) {
-                        // Hay calificaciones → sincronizar a Room primero
-                        List<Calificacion> calificaciones = query.toObjects(Calificacion.class);
+                        List<Calificacion> cals = query.toObjects(Calificacion.class);
                         ExecutorUtils.getExecutor().execute(() -> {
                             AppDatabase db = AppDatabase.getInstance(this);
-                            for (Calificacion c : calificaciones) {
-                                db.calificacionDao().insertar(c);
-                            }
+                            for (Calificacion c : cals) db.calificacionDao().insertar(c);
                             runOnUiThread(() -> cargarServicios());
                         });
                     } else {
-                        // No hay calificaciones pero igual hay que cargar servicios
                         cargarServicios();
                     }
                 })
-                .addOnFailureListener(e -> {
-                    // Si falla la red, cargar igual desde Room/Firestore
-                    cargarServicios();
-                });
+                .addOnFailureListener(e -> cargarServicios());
+    }
+
+    /** Devuelve el valor o "—" si es null. Nunca retorna null. */
+    private static String nn(String s) {
+        return s != null ? s : "—";
     }
 }

@@ -21,16 +21,25 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Muestra todos los servicios del cliente con su estado.
+ *
+ * CORRECCIÓN:
+ *  El listener solo abre la calificación cuando el estado es TERMINADO.
+ *  Para cualquier otro estado (PENDIENTE, CONFIRMADO) no hace nada,
+ *  ya que el servicio aún no ha sido finalizado por el proveedor.
+ */
 public class FragmentNotificaciones extends Fragment {
 
-    private ServicioViewModel servicioViewModel;
+    private ServicioViewModel    servicioViewModel;
     private MantenimientoAdapter adapter;
     private final List<Servicio> listaServicios = new ArrayList<>();
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,       @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_notificaciones, container, false);
     }
 
@@ -46,7 +55,8 @@ public class FragmentNotificaciones extends Fragment {
         RecyclerView rvNotificaciones = view.findViewById(R.id.rvNotificaciones);
         rvNotificaciones.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new MantenimientoAdapter(listaServicios, this::abrirCalificacion);
+        // CORRECCIÓN: el listener verifica el estado antes de abrir calificación
+        adapter = new MantenimientoAdapter(listaServicios, this::manejarTapServicio);
         rvNotificaciones.setAdapter(adapter);
 
         String uid = FirebaseAuth.getInstance().getCurrentUser() != null
@@ -61,6 +71,19 @@ public class FragmentNotificaciones extends Fragment {
         }
     }
 
+    /**
+     * Solo abre la pantalla de calificación si el servicio está TERMINADO.
+     * Si está PENDIENTE o CONFIRMADO, no hace nada — el proveedor aún
+     * no ha finalizado el trabajo.
+     */
+    private void manejarTapServicio(Servicio servicio) {
+        if (!Servicio.ESTADO_TERMINADO.equals(servicio.getEstado())) {
+            // Servicio aún no finalizado → ignorar tap
+            return;
+        }
+        abrirCalificacion(servicio);
+    }
+
     private void abrirCalificacion(Servicio servicio) {
         FragmentCalificacion fragment = new FragmentCalificacion();
         Bundle args = new Bundle();
@@ -68,7 +91,6 @@ public class FragmentNotificaciones extends Fragment {
         args.putString("proveedorUid", servicio.getProveedorUid());
         fragment.setArguments(args);
 
-        // Contenedor principal de DetalleHogar
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.mi_hogar, fragment)
                 .addToBackStack(null)
