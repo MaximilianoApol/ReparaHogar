@@ -91,9 +91,9 @@ public class MantenimientoAdapter extends RecyclerView.Adapter<MantenimientoAdap
         // Detalle
         holder.txtDescripcion.setText(s.getDetalle() != null ? s.getDetalle() : "—");
 
-        // Tap en TERMINADO → calificar
+// Tap en cualquier servicio → abrir detalle
         holder.itemView.setOnClickListener(v -> {
-            if (Servicio.ESTADO_TERMINADO.equals(s.getEstado()) && onCalificarListener != null) {
+            if (onCalificarListener != null) {
                 onCalificarListener.onCalificar(s);
             }
         });

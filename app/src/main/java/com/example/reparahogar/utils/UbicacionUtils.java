@@ -7,7 +7,7 @@ public class UbicacionUtils {
 
     // Radio de búsqueda inicial. Si no hay resultados, se usa el extendido.
     public static final double RADIO_KM_INICIAL   = 10.0;
-    public static final double RADIO_KM_EXTENDIDO = 25.0;
+    public static final double RADIO_KM_EXTENDIDO = 40.0;
 
     private UbicacionUtils() {}
 

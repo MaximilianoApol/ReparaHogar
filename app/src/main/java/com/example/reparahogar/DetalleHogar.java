@@ -215,11 +215,16 @@ public class DetalleHogar extends AppCompatActivity {
     }
 
     private void abrirCalificacion(Servicio servicio) {
-        FragmentCalificacion frag = new FragmentCalificacion();
+        FragmentDetalleServicio frag = new FragmentDetalleServicio();
         Bundle args = new Bundle();
-        args.putString("servicioId", servicio.getId());
+        args.putString("servicioId",   servicio.getId());
         args.putString("proveedorUid", servicio.getProveedorUid());
-        frag.setArguments(args);
+        args.putString("categoria",    servicio.getCategoria());
+        args.putString("detalle",      servicio.getDetalle());
+        args.putString("estado",       servicio.getEstado());
+        args.putString("fecha",        servicio.getFecha());
+        args.putString("hora",         servicio.getHora());
+        args.putString("direccion",    servicio.getDireccion());
         abrirFragment(frag);
     }
 
