@@ -228,13 +228,16 @@ public class DetalleHogar extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction().replace(R.id.mi_hogar, fragment).addToBackStack(null).commit();
     }
 
+// Elimina onResume completamente — ya no lo necesitamos así
+
     private void configurarNavegacion() {
         bottomNav = findViewById(R.id.bottom_navigation);
         if (bottomNav != null) {
             bottomNav.setOnItemSelectedListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.page_1) {
-                    getSupportFragmentManager().popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    getSupportFragmentManager().popBackStack(null,
+                            androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     return true;
                 } else if (id == R.id.page_2) {
                     abrirFragment(new FragmentCalendario());
@@ -246,36 +249,61 @@ public class DetalleHogar extends AppCompatActivity {
                 return false;
             });
         }
+
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            int count = getSupportFragmentManager().getBackStackEntryCount();
+
+            if (count == 0) {
                 if (fragmentContainer != null) fragmentContainer.setVisibility(View.GONE);
                 if (bottomNav != null) bottomNav.setSelectedItemId(R.id.page_1);
+            }
+
+            // Cada vez que se cierra cualquier fragment, resincronizar calificaciones
+            // para que el badge se actualice inmediatamente tras calificar
+            String uid = FirebaseAuth.getInstance().getUid();
+            if (uid != null) {
+                sincronizarYRefrescarBadge(uid);
             }
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Refresca badge y lista al volver de FragmentCalificacion
-        String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null || listaCompletaFirebase.isEmpty()) return;
+    private void sincronizarYRefrescarBadge(String uid) {
+        FirebaseFirestore.getInstance()
+                .collection("calificaciones")
+                .whereEqualTo("clienteUid", uid)
+                .get()
+                .addOnSuccessListener(query -> {
+                    List<String> idsCalificados = new ArrayList<>();
 
-        ExecutorUtils.getExecutor().execute(() -> {
-            List<String> idsCalificados = AppDatabase.getInstance(this)
-                    .calificacionDao()
-                    .obtenerIdsCalificadosPorCliente(uid);
+                    if (!query.isEmpty()) {
+                        List<Calificacion> calificaciones = query.toObjects(Calificacion.class);
 
-            runOnUiThread(() -> {
-                actualizarBadge(listaCompletaFirebase, idsCalificados);
-                if (mostrandoTodo) {
-                    mostrarTodosLosServicios(idsCalificados);
-                } else {
-                    filtrarServiciosHoy(listaCompletaFirebase, idsCalificados);
-                }
-            });
-        });
+                        // Sincronizar a Room en background
+                        ExecutorUtils.getExecutor().execute(() -> {
+                            AppDatabase db = AppDatabase.getInstance(this);
+                            for (Calificacion c : calificaciones) {
+                                db.calificacionDao().insertar(c);
+                            }
+                        });
+
+                        for (Calificacion c : calificaciones) {
+                            idsCalificados.add(c.getServicioId());
+                        }
+                    }
+
+                    // Actualizar badge y lista con datos frescos de Firestore
+                    if (!listaCompletaFirebase.isEmpty()) {
+                        actualizarBadge(listaCompletaFirebase, idsCalificados);
+                        if (mostrandoTodo) {
+                            mostrarTodosLosServicios(idsCalificados);
+                        } else {
+                            filtrarServiciosHoy(listaCompletaFirebase, idsCalificados);
+                        }
+                    }
+                });
     }
+
+
 
     private void sincronizarCalificacionesDesdeFirestore(String uid) {
         FirebaseFirestore.getInstance()
